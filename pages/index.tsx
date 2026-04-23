@@ -23,10 +23,10 @@ export default function Home() {
   const [saved, setSaved] = useState(false);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [isBlocked, setIsBlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const totalQuestions = questions.length;
 
-  // Check login and completion status
+  // Check login and load leaderboard on mount
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
@@ -36,29 +36,19 @@ export default function Home() {
     }
     setVentName(storedName);
     setPhone(storedPhone);
-
-    // Verify if user has already taken the quiz (server-side lock)
-    fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.completed) {
-          setIsBlocked(true);
-          setGameState('finished');
-        }
-      })
-      .catch(err => console.error('Failed to check completion:', err));
+    // Simulate loading of initial data
+    setTimeout(() => setIsLoading(false), 500);
   }, [router]);
 
-  // Timer effect (only when playing and not already showing feedback)
+  // Timer effect
   useEffect(() => {
     if (gameState !== 'playing' || feedback !== null) return;
     setTimeLeft(30);
     const interval = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
           if (selectedOption === null) {
-            // Auto-submit with wrong answer
             setFeedback('wrong');
             setTimeout(() => {
               if (currentIndex + 1 < totalQuestions) {
@@ -79,7 +69,6 @@ export default function Home() {
   }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
 
   const startGame = () => {
-    if (isBlocked) return;
     setGameState('playing');
     setCurrentIndex(0);
     setScore(0);
@@ -119,17 +108,11 @@ export default function Home() {
           phone,
           score,
           totalQuestions,
-          answers: questions.map(q => q.correctAnswer),
-        }),
+          answers: questions.map(q => q.correctAnswer)
+        })
       });
       if (res.ok) {
         setSaved(true);
-        // Set completion flag
-        await fetch('/api/set-completed', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone }),
-        });
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
@@ -142,20 +125,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (gameState === 'finished' && !saved && ventName && phone && !isBlocked) {
+    if (gameState === 'finished' && !saved && ventName && phone) {
       saveResult();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, saved, ventName, phone, isBlocked]);
+  }, [gameState, saved, ventName, phone]);
 
-  // User is blocked (already taken the quiz)
-  if (isBlocked) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
-          <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
-          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center">
+        <div className="spinner"></div>
       </div>
     );
   }
@@ -163,16 +141,31 @@ export default function Home() {
   // Start screen
   if (gameState === 'start') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-        <div className="text-center">
-          <img src="/vent logo.png" alt="Christian Vent Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
-          <h1 className="text-5xl font-bold text-[#FFD966] mb-4">Bible Quiz</h1>
-          <p className="text-white/80 mb-8">Test your knowledge of the Bible</p>
-          <button onClick={startGame} className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4"
+      >
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          transition={{ duration: 0.5, type: 'spring' }}
+          className="text-center"
+        >
+          <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
+          <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
+          <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startGame}
+            className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition"
+          >
             Start Quiz
-          </button>
-        </div>
-      </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
     );
   }
 
@@ -182,20 +175,25 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
-          <div className="text-center text-white/70 mb-2">⏱️ Time left: {timeLeft}s</div>
-          <div className="text-center text-white/70 mb-2">Question {currentIndex + 1} of {totalQuestions}</div>
+          <div className="flex justify-between items-center text-white/80 mb-2">
+            <span>⏱️ {timeLeft}s</span>
+            <span>📋 {currentIndex+1}/{totalQuestions}</span>
+          </div>
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-white/10 backdrop-blur rounded-2xl p-8 border border-[#FFD966]/30 shadow-xl"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 border border-[#FFD966]/30 shadow-xl"
           >
-            <div className="text-white text-2xl font-semibold mb-6">{q.text}</div>
+            <div className="text-white text-xl md:text-2xl font-semibold mb-6">{q.text}</div>
             <div className="space-y-3">
               {q.options.map((opt, idx) => (
-                <button
+                <motion.button
                   key={idx}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedOption(idx)}
                   className={`w-full text-left p-4 rounded-xl transition ${
                     selectedOption === idx
@@ -204,17 +202,19 @@ export default function Home() {
                   }`}
                   disabled={feedback !== null}
                 >
-                  {String.fromCharCode(65 + idx)}. {opt}
-                </button>
+                  {String.fromCharCode(65+idx)}. {opt}
+                </motion.button>
               ))}
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleAnswer}
               disabled={selectedOption === null || feedback !== null}
-              className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition hover:scale-105"
+              className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition"
             >
               Submit
-            </button>
+            </motion.button>
           </motion.div>
           <AnimatePresence>
             {feedback && (
@@ -235,32 +235,38 @@ export default function Home() {
     );
   }
 
-  // Finished screen (score + leaderboard, no retry button)
+  // Finished screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4"
+    >
+      <div className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 max-w-md w-full text-center border border-[#FFD966]/30">
         <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Your Score</h2>
         <div className="text-6xl font-bold text-white my-4">{score} / {totalQuestions}</div>
-        <div className="text-white/70 mb-6">{Math.round((score / totalQuestions) * 100)}%</div>
+        <div className="text-white/70 mb-6">{Math.round(score/totalQuestions*100)}%</div>
         {!saved ? (
-          <p className="text-white/70">Saving your score...</p>
+          <div className="spinner mx-auto my-4 w-6 h-6 border-2 border-t-2"></div>
         ) : (
           <>
             <p className="text-green-400 mb-4">✅ Your score has been recorded!</p>
             {leaderboard.length > 0 && (
-              <div className="mt-4 text-left">
-                <h3 className="text-[#FFD966] font-bold text-xl mb-2">🏆 Top Players</h3>
-                {leaderboard.map((user, idx) => (
-                  <div key={idx} className="text-white/80 flex justify-between py-1">
-                    <span>{idx + 1}. {user.name}</span>
-                    <span>{user.score} pts</span>
-                  </div>
-                ))}
+              <div className="mt-6 text-left bg-black/20 rounded-xl p-4">
+                <h3 className="text-[#FFD966] font-bold text-xl mb-2 text-center">🏆 Top Players</h3>
+                <div className="space-y-1">
+                  {leaderboard.map((user, idx) => (
+                    <div key={idx} className="text-white/80 flex justify-between text-sm md:text-base">
+                      <span>{idx+1}. {user.name}</span>
+                      <span>{user.score} pts</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
