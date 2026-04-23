@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { UserResult } from '../types';
+
+interface UserResult {
+  id: string;
+  name: string;
+  phone: string;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  timestamp: number;
+}
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -32,7 +41,7 @@ export default function Admin() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur p-8 rounded-2xl text-center">
           <h1 className="text-[#FFD966] text-2xl mb-4">Admin Login</h1>
           <input
@@ -50,7 +59,6 @@ export default function Admin() {
 
   if (loading) return <div className="text-white p-8 text-center">Loading results...</div>;
 
-  // Ensure results is an array before sorting
   const sorted = [...(results || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
   const winner = sorted.length > 0 ? sorted[0] : null;
 
