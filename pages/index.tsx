@@ -13,7 +13,7 @@ const questions: Question[] = [
 
 export default function Home() {
   const router = useRouter();
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'finished'>('start');
+  const [gameState, setGameState] = useState<'register' | 'start' | 'playing' | 'finished'>('register');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -25,38 +25,59 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [registerError, setRegisterError] = useState('');
   const totalQuestions = questions.length;
 
-  // Check login and completion status (Redis lock)
-  useEffect(() => {
-    const storedName = localStorage.getItem('ventName');
-    const storedPhone = localStorage.getItem('phone');
-    if (!storedName || !storedPhone) {
-      router.push('/login');
+  // No localStorage – we check block based on phone only (if user tries to submit a new quiz with same phone)
+  // But since we allow retake only after admin deletes, we don't pre‑block on page load.
+  // Instead, we'll check inside handleRegister before starting.
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ventName.trim() || !phone.trim()) {
+      setRegisterError('Please fill in both fields');
       return;
     }
-    setVentName(storedName);
-    setPhone(storedPhone);
+    const phoneRegex = /^[0-9+\-\s()]{8,20}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      setRegisterError('Please enter a valid phone number');
+      return;
+    }
+    // Check if this phone already completed the quiz
+    try {
+      const res = await fetch(`/api/check-completed?phone=${encodeURIComponent(phone.trim())}`);
+      const data = await res.json();
+      if (data.completed) {
+        setRegisterError('This phone number has already taken the quiz. Contact admin if you believe this is an error.');
+        return;
+      }
+    } catch (err) {
+      setRegisterError('Network error, please try again');
+      return;
+    }
+    // Proceed to start screen
+    setGameState('start');
+    setRegisterError('');
+  };
 
-    // Verify completion flag from Redis
-    fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.completed) {
-          setIsBlocked(true);
-          setGameState('finished'); // show locked screen
-        }
-        setTimeout(() => setIsLoading(false), 300);
-      })
-      .catch(err => {
-        console.error('Completion check failed:', err);
-        setTimeout(() => setIsLoading(false), 300);
-      });
-  }, [router]);
+  const startGame = () => {
+    setGameState('playing');
+    setCurrentIndex(0);
+    setScore(0);
+    setSelectedOption(null);
+    setFeedback(null);
+    setSaved(false);
+    setLeaderboard([]);
+  };
 
-  // Timer effect (unchanged)
   useEffect(() => {
-    if (gameState !== 'playing' || feedback !== null || isBlocked) return;
+    // No localStorage, just finish loading state
+    setTimeout(() => setIsLoading(false), 300);
+  }, []);
+
+  // Timer effect (same as before)
+  useEffect(() => {
+    if (gameState !== 'playing' || feedback !== null) return;
     setTimeLeft(30);
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -80,21 +101,10 @@ export default function Home() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions, isBlocked]);
-
-  const startGame = () => {
-    if (isBlocked) return;
-    setGameState('playing');
-    setCurrentIndex(0);
-    setScore(0);
-    setSelectedOption(null);
-    setFeedback(null);
-    setSaved(false);
-    setLeaderboard([]);
-  };
+  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
 
   const handleAnswer = () => {
-    if (selectedOption === null || feedback !== null || isBlocked) return;
+    if (selectedOption === null || feedback !== null) return;
     const isCorrect = selectedOption === questions[currentIndex].correctAnswer;
     setFeedback(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) {
@@ -146,12 +156,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (gameState === 'finished' && !saved && ventName && phone && !isBlocked) {
+    if (gameState === 'finished' && !saved && ventName && phone) {
       saveResult();
     }
-  }, [gameState, saved, ventName, phone, isBlocked]);
+  }, [gameState, saved, ventName, phone]);
 
-  // Loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center">
@@ -160,23 +169,65 @@ export default function Home() {
     );
   }
 
-  // Blocked screen (already taken)
-  if (isBlocked) {
+  // Registration screen
+  if (gameState === 'register') {
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
       >
-        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
-          <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
-          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full border border-[#FFD966]/30 shadow-xl">
+          <div className="text-center mb-8">
+            <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
+            <h1 className="text-3xl font-bold text-[#FFD966]">Bible Quiz</h1>
+            <p className="text-white/70 mt-2">Enter your details to begin</p>
+          </div>
+
+          <form onSubmit={handleRegister} className="space-y-5">
+            <div>
+              <label className="block text-white/80 mb-1 text-sm font-medium">Your Name</label>
+              <input
+                type="text"
+                value={ventName}
+                onChange={(e) => setVentName(e.target.value)}
+                placeholder="e.g., FaithfulServant"
+                className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
+              />
+              <p className="text-white/50 text-xs mt-1">How you will appear on the leaderboard</p>
+            </div>
+
+            <div>
+              <label className="block text-white/80 mb-1 text-sm font-medium">Phone Number</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g., +251912345678"
+                className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
+              />
+              <p className="text-white/50 text-xs mt-1">We will contact you if you win</p>
+            </div>
+
+            {registerError && (
+              <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center">
+                {registerError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold text-lg hover:scale-105 transition"
+            >
+              Continue
+            </button>
+          </form>
         </div>
       </motion.div>
     );
   }
 
-  // Start screen
+  // Start screen (shown after registration)
   if (gameState === 'start') {
     return (
       <motion.div
@@ -192,7 +243,7 @@ export default function Home() {
         >
           <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
-          <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
+          <p className="text-white/80 mb-8 text-lg">Ready to test your knowledge?</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -206,7 +257,7 @@ export default function Home() {
     );
   }
 
-  // Playing screen
+  // Playing screen (unchanged)
   if (gameState === 'playing') {
     const q = questions[currentIndex];
     return (
@@ -272,7 +323,7 @@ export default function Home() {
     );
   }
 
-  // Finished screen
+  // Finished screen (score + leaderboard)
   return (
     <motion.div
       initial={{ opacity: 0 }}
