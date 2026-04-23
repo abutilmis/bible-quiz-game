@@ -132,7 +132,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center">
         <div className="spinner"></div>
       </div>
     );
@@ -145,7 +145,7 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4"
+        className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
@@ -173,7 +173,7 @@ export default function Home() {
   if (gameState === 'playing') {
     const q = questions[currentIndex];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <div className="flex justify-between items-center text-white/80 mb-2">
             <span>⏱️ {timeLeft}s</span>
@@ -240,7 +240,7 @@ export default function Home() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4"
+      className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
     >
       <div className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 max-w-md w-full text-center border border-[#FFD966]/30">
         <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Your Score</h2>

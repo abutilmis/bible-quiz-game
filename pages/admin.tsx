@@ -55,7 +55,7 @@ export default function Admin() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur p-8 rounded-2xl text-center">
           <h1 className="text-[#FFD966] text-2xl mb-4">Admin Login</h1>
           <input
@@ -73,7 +73,7 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center">
         <div className="spinner"></div>
       </div>
     );
@@ -83,7 +83,7 @@ export default function Admin() {
   const winner = sorted.length > 0 ? sorted[0] : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-[#FFD966] mb-6">Admin Dashboard</h1>
         {winner && (
