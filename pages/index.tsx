@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { useRouter } from 'next/router';
 import { Question } from '../types';
 
 const questions: Question[] = [
@@ -11,17 +12,36 @@ const questions: Question[] = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [gameState, setGameState] = useState<'start' | 'playing' | 'finished'>('start');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-  const [name, setName] = useState('');
+  const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [saved, setSaved] = useState(false);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
-
   const totalQuestions = questions.length;
+
+  // On mount: retrieve stored user data, otherwise redirect to login
+  useEffect(() => {
+    const storedName = localStorage.getItem('ventName');
+    const storedPhone = localStorage.getItem('phone');
+    if (!storedName || !storedPhone) {
+      router.push('/login');
+    } else {
+      setVentName(storedName);
+      setPhone(storedPhone);
+    }
+  }, [router]);
+
+  // Auto-save when quiz finishes
+  useEffect(() => {
+    if (gameState === 'finished' && !saved && ventName && phone) {
+      saveResult();
+    }
+  }, [gameState, saved, ventName, phone]);
 
   const startGame = () => {
     setGameState('playing');
@@ -52,20 +72,16 @@ export default function Home() {
   };
 
   const saveResult = async () => {
-    if (!name.trim() || !phone.trim()) {
-      alert('Please enter your name and phone number');
-      return;
-    }
     try {
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: name.trim(),
-          phone: phone.trim(),
+          name: ventName,
+          phone,
           score,
           totalQuestions,
-          answers: questions.map(q => q.correctAnswer) // not needed for leaderboard but for admin
+          answers: questions.map(q => q.correctAnswer)
         })
       });
       if (res.ok) {
@@ -74,11 +90,10 @@ export default function Home() {
         const data = await leaderboardRes.json();
         setLeaderboard(data);
       } else {
-        const err = await res.text();
-        alert(`Failed to save: ${err}`);
+        console.error('Failed to save score');
       }
     } catch (error) {
-      alert('Network error. Please try again.');
+      console.error('Error saving score:', error);
     }
   };
 
@@ -154,7 +169,7 @@ export default function Home() {
     );
   }
 
-  // Finished screen
+  // Finished screen (score + leaderboard, no name/phone inputs)
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
@@ -162,28 +177,7 @@ export default function Home() {
         <div className="text-6xl font-bold text-white my-4">{score} / {totalQuestions}</div>
         <div className="text-white/70 mb-6">{Math.round(score/totalQuestions*100)}%</div>
         {!saved ? (
-          <>
-            <input
-              type="text"
-              placeholder="Your name (e.g., John)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 mb-3"
-            />
-            <input
-              type="tel"
-              placeholder="Phone number (with country code)"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 mb-6"
-            />
-            <button
-              onClick={saveResult}
-              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-3 rounded-full font-bold w-full"
-            >
-              Submit & See Leaderboard
-            </button>
-          </>
+          <p className="text-white/70">Saving your score...</p>
         ) : (
           <>
             <p className="text-green-400 mb-4">✅ Your score has been recorded!</p>
