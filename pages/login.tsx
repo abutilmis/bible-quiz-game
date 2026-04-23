@@ -40,7 +40,6 @@ export default function Login() {
             alt="Christian Vent Logo"
             className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
           />
-          <div className="text-5xl mb-2">📖</div>
           <h1 className="text-3xl font-bold text-[#FFD966]">Christian Vent</h1>
           <p className="text-white/70 mt-2">Test your Bible knowledge</p>
         </div>
