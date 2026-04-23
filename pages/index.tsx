@@ -22,26 +22,64 @@ export default function Home() {
   const [phone, setPhone] = useState('');
   const [saved, setSaved] = useState(false);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [hasFinished, setHasFinished] = useState(false);
   const totalQuestions = questions.length;
 
+  // Check login and one‑attempt flag
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
     if (!storedName || !storedPhone) {
       router.push('/login');
-    } else {
-      setVentName(storedName);
-      setPhone(storedPhone);
+      return;
+    }
+    setVentName(storedName);
+    setPhone(storedPhone);
+
+    const finished = localStorage.getItem('quizFinished');
+    if (finished === 'true') {
+      setHasFinished(true);
+      setGameState('finished');
+      setSaved(true); // prevent auto‑save
     }
   }, [router]);
 
+  // Timer effect
   useEffect(() => {
-    if (gameState === 'finished' && !saved && ventName && phone) {
-      saveResult();
-    }
-  }, [gameState, saved, ventName, phone]);
+    if (gameState !== 'playing' || feedback !== null) return;
+    setTimeLeft(30);
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          if (selectedOption === null) {
+            // Auto‑submit without an answer (mark as wrong)
+            const isCorrect = false;
+            setFeedback(isCorrect ? 'correct' : 'wrong');
+            if (!isCorrect && currentIndex + 1 === totalQuestions) {
+              setGameState('finished');
+            }
+            setTimeout(() => {
+              if (currentIndex + 1 < totalQuestions) {
+                setCurrentIndex(currentIndex + 1);
+                setSelectedOption(null);
+                setFeedback(null);
+              } else {
+                setGameState('finished');
+              }
+            }, 1500);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
 
   const startGame = () => {
+    if (hasFinished) return;
     setGameState('playing');
     setCurrentIndex(0);
     setScore(0);
@@ -70,6 +108,7 @@ export default function Home() {
   };
 
   const saveResult = async () => {
+    if (saved) return;
     try {
       const res = await fetch('/api/save-result', {
         method: 'POST',
@@ -84,6 +123,7 @@ export default function Home() {
       });
       if (res.ok) {
         setSaved(true);
+        localStorage.setItem('quizFinished', 'true');
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
@@ -95,17 +135,19 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    if (gameState === 'finished' && !saved && ventName && phone) {
+      saveResult();
+    }
+  }, [gameState, saved, ventName, phone]);
+
   // Start screen
   if (gameState === 'start') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
         <div className="text-center">
-          <img
-            src="/vent logo.png"
-            alt="Christian Vent Logo"
-            className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
-          />
-          <h1 className="text-5xl font-bold text-[#FFD966] mb-4">📖 Bible Quiz</h1>
+          <img src="/vent logo.png" alt="Christian Vent Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
+          <h1 className="text-5xl font-bold text-[#FFD966] mb-4">Bible Quiz</h1>
           <p className="text-white/80 mb-8">Test your knowledge of the Bible</p>
           <button onClick={startGame} className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition">
             Start Quiz
@@ -121,7 +163,8 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
-          <div className="text-center text-white/70 mb-4">Question {currentIndex+1} of {totalQuestions}</div>
+          <div className="text-center text-white/70 mb-2">⏱️ Time left: {timeLeft}s</div>
+          <div className="text-center text-white/70 mb-2">Question {currentIndex+1} of {totalQuestions}</div>
           <motion.div
             key={currentIndex}
             initial={{ opacity: 0, y: 20 }}
@@ -140,6 +183,7 @@ export default function Home() {
                       ? 'bg-[#FFD966] text-[#1e3c2c] font-bold'
                       : 'bg-black/30 text-white hover:bg-black/50'
                   }`}
+                  disabled={feedback !== null}
                 >
                   {String.fromCharCode(65+idx)}. {opt}
                 </button>
@@ -147,7 +191,7 @@ export default function Home() {
             </div>
             <button
               onClick={handleAnswer}
-              disabled={selectedOption === null}
+              disabled={selectedOption === null || feedback !== null}
               className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition hover:scale-105"
             >
               Submit
@@ -172,38 +216,29 @@ export default function Home() {
     );
   }
 
-  // Finished screen (score + leaderboard)
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
-        <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Your Score</h2>
-        <div className="text-6xl font-bold text-white my-4">{score} / {totalQuestions}</div>
-        <div className="text-white/70 mb-6">{Math.round(score/totalQuestions*100)}%</div>
-        {!saved ? (
-          <p className="text-white/70">Saving your score...</p>
-        ) : (
-          <>
-            <p className="text-green-400 mb-4">✅ Your score has been recorded!</p>
-            <button
-              onClick={startGame}
-              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-3 rounded-full font-bold w-full mb-6"
-            >
-              Play Again
-            </button>
-            {leaderboard.length > 0 && (
-              <div className="mt-4 text-left">
-                <h3 className="text-[#FFD966] font-bold text-xl mb-2">🏆 Top Players</h3>
-                {leaderboard.map((user, idx) => (
-                  <div key={idx} className="text-white/80 flex justify-between py-1">
-                    <span>{idx+1}. {user.name}</span>
-                    <span>{user.score} pts</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+  // Finished screen
+  if (hasFinished && gameState === 'finished') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
+          <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Quiz Completed</h2>
+          <p className="text-white/80 mb-6">You have already taken the quiz. Thank you for participating!</p>
+          {leaderboard.length > 0 && (
+            <div className="mt-4 text-left">
+              <h3 className="text-[#FFD966] font-bold text-xl mb-2">🏆 Leaderboard</h3>
+              {leaderboard.map((user, idx) => (
+                <div key={idx} className="text-white/80 flex justify-between py-1">
+                  <span>{idx+1}. {user.name}</span>
+                  <span>{user.score} pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Fallback (should not happen)
+  return null;
 }
