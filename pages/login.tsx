@@ -8,11 +8,6 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
 
-  // If already logged in (but now we require fresh entry each time, we don't redirect)
-  // We keep only the check to avoid redirecting to quiz if not needed.
-  // Actually we want fresh entry each time, so no auto-redirect.
-  // But if user already took quiz, they should see blocked screen – handled by index.
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ventName.trim() || !phone.trim()) {
@@ -24,7 +19,6 @@ export default function Login() {
       setError('Please enter a valid phone number');
       return;
     }
-    // Store in localStorage for this session only (will be cleared on logout)
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
     router.push('/');
@@ -58,7 +52,6 @@ export default function Login() {
               placeholder="e.g., FaithfulServant"
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
-            <p className="text-white/40 text-xs mt-1 font-light">This is how you will appear anonymously</p>
           </div>
 
           <div>
@@ -70,7 +63,6 @@ export default function Login() {
               placeholder="e.g., +251912345678"
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
-            <p className="text-white/40 text-xs mt-1 font-light">We'll contact you if you win a prize</p>
           </div>
 
           {error && (
