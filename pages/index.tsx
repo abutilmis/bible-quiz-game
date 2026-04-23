@@ -23,10 +23,9 @@ export default function Home() {
   const [saved, setSaved] = useState(false);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [hasFinished, setHasFinished] = useState(false);
   const totalQuestions = questions.length;
 
-  // Check login and one‑attempt flag
+  // Check login and load leaderboard if needed
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
@@ -36,13 +35,6 @@ export default function Home() {
     }
     setVentName(storedName);
     setPhone(storedPhone);
-
-    const finished = localStorage.getItem('quizFinished');
-    if (finished === 'true') {
-      setHasFinished(true);
-      setGameState('finished');
-      setSaved(true); // prevent auto‑save
-    }
   }, [router]);
 
   // Timer effect
@@ -54,12 +46,9 @@ export default function Home() {
         if (prev <= 1) {
           clearInterval(interval);
           if (selectedOption === null) {
-            // Auto‑submit without an answer (mark as wrong)
+            // Auto-submit by faking a wrong answer
             const isCorrect = false;
             setFeedback(isCorrect ? 'correct' : 'wrong');
-            if (!isCorrect && currentIndex + 1 === totalQuestions) {
-              setGameState('finished');
-            }
             setTimeout(() => {
               if (currentIndex + 1 < totalQuestions) {
                 setCurrentIndex(currentIndex + 1);
@@ -79,13 +68,13 @@ export default function Home() {
   }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
 
   const startGame = () => {
-    if (hasFinished) return;
     setGameState('playing');
     setCurrentIndex(0);
     setScore(0);
     setSelectedOption(null);
     setFeedback(null);
     setSaved(false);
+    setLeaderboard([]);
   };
 
   const handleAnswer = () => {
@@ -123,7 +112,6 @@ export default function Home() {
       });
       if (res.ok) {
         setSaved(true);
-        localStorage.setItem('quizFinished', 'true');
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
@@ -216,29 +204,38 @@ export default function Home() {
     );
   }
 
-  // Finished screen
-  if (hasFinished && gameState === 'finished') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
-          <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Quiz Completed</h2>
-          <p className="text-white/80 mb-6">You have already taken the quiz. Thank you for participating!</p>
-          {leaderboard.length > 0 && (
-            <div className="mt-4 text-left">
-              <h3 className="text-[#FFD966] font-bold text-xl mb-2">🏆 Leaderboard</h3>
-              {leaderboard.map((user, idx) => (
-                <div key={idx} className="text-white/80 flex justify-between py-1">
-                  <span>{idx+1}. {user.name}</span>
-                  <span>{user.score} pts</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+  // Finished screen (score + leaderboard + retake option)
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
+      <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">
+        <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Your Score</h2>
+        <div className="text-6xl font-bold text-white my-4">{score} / {totalQuestions}</div>
+        <div className="text-white/70 mb-6">{Math.round(score/totalQuestions*100)}%</div>
+        {!saved ? (
+          <p className="text-white/70">Saving your score...</p>
+        ) : (
+          <>
+            <p className="text-green-400 mb-4">✅ Your score has been recorded!</p>
+            <button
+              onClick={startGame}
+              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-3 rounded-full font-bold w-full mb-6"
+            >
+              Play Again
+            </button>
+            {leaderboard.length > 0 && (
+              <div className="mt-4 text-left">
+                <h3 className="text-[#FFD966] font-bold text-xl mb-2">🏆 Top Players</h3>
+                {leaderboard.map((user, idx) => (
+                  <div key={idx} className="text-white/80 flex justify-between py-1">
+                    <span>{idx+1}. {user.name}</span>
+                    <span>{user.score} pts</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    );
-  }
-
-  // Fallback (should not happen)
-  return null;
+    </div>
+  );
 }

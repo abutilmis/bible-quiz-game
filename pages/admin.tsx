@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
+import { UserResult } from '../types';
 
-interface UserResult {
-  id: string;
-  name: string;
-  phone: string;
-  score: number;
-  totalQuestions: number;
-  percentage: number;
-  timestamp: number;
-}
+const ADMIN_SECRET = 'wOUR/4426/11'; // same as in /api/admin/delete-user
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -37,6 +30,24 @@ export default function Admin() {
   const handleLogin = () => {
     if (password === 'admin123') setAuthenticated(true);
     else alert('Wrong password');
+  };
+
+  const deleteUser = async (name: string, phone: string) => {
+    if (!confirm(`Are you sure you want to delete ${name} (${phone})?`)) return;
+    try {
+      const res = await fetch(`/api/admin/delete-user?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&secret=${ADMIN_SECRET}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Deleted ${name}`);
+        fetchResults(); // refresh table
+      } else {
+        alert(data.error || 'Failed to delete');
+      }
+    } catch (err) {
+      alert('Network error');
+    }
   };
 
   if (!authenticated) {
@@ -87,6 +98,7 @@ export default function Admin() {
                 <th className="p-3 border">Score</th>
                 <th className="p-3 border">%</th>
                 <th className="p-3 border">Date</th>
+                <th className="p-3 border">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -98,6 +110,14 @@ export default function Admin() {
                   <td className="p-3 border">{user.score}/{user.totalQuestions}</td>
                   <td className="p-3 border">{user.percentage}%</td>
                   <td className="p-3 border">{new Date(user.timestamp).toLocaleString()}</td>
+                  <td className="p-3 border">
+                    <button
+                      onClick={() => deleteUser(user.name, user.phone)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                    >
+                      🗑 Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
