@@ -24,9 +24,10 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
   const totalQuestions = questions.length;
 
-  // Check login and load leaderboard on mount
+  // Check login and completion status (Redis lock)
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
@@ -36,13 +37,26 @@ export default function Home() {
     }
     setVentName(storedName);
     setPhone(storedPhone);
-    // Simulate loading of initial data
-    setTimeout(() => setIsLoading(false), 500);
+
+    // Verify completion flag from Redis
+    fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.completed) {
+          setIsBlocked(true);
+          setGameState('finished'); // show locked screen
+        }
+        setTimeout(() => setIsLoading(false), 300);
+      })
+      .catch(err => {
+        console.error('Completion check failed:', err);
+        setTimeout(() => setIsLoading(false), 300);
+      });
   }, [router]);
 
-  // Timer effect
+  // Timer effect (unchanged)
   useEffect(() => {
-    if (gameState !== 'playing' || feedback !== null) return;
+    if (gameState !== 'playing' || feedback !== null || isBlocked) return;
     setTimeLeft(30);
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -66,9 +80,10 @@ export default function Home() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
+  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions, isBlocked]);
 
   const startGame = () => {
+    if (isBlocked) return;
     setGameState('playing');
     setCurrentIndex(0);
     setScore(0);
@@ -79,7 +94,7 @@ export default function Home() {
   };
 
   const handleAnswer = () => {
-    if (selectedOption === null || feedback !== null) return;
+    if (selectedOption === null || feedback !== null || isBlocked) return;
     const isCorrect = selectedOption === questions[currentIndex].correctAnswer;
     setFeedback(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) {
@@ -113,6 +128,12 @@ export default function Home() {
       });
       if (res.ok) {
         setSaved(true);
+        // Set completion flag
+        await fetch('/api/set-completed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
@@ -125,16 +146,33 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (gameState === 'finished' && !saved && ventName && phone) {
+    if (gameState === 'finished' && !saved && ventName && phone && !isBlocked) {
       saveResult();
     }
-  }, [gameState, saved, ventName, phone]);
+  }, [gameState, saved, ventName, phone, isBlocked]);
 
+  // Loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center">
         <div className="spinner"></div>
       </div>
+    );
+  }
+
+  // Blocked screen (already taken)
+  if (isBlocked) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
+      >
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
+          <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
+          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
+        </div>
+      </motion.div>
     );
   }
 
@@ -144,7 +182,6 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
         className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
       >
         <motion.div
