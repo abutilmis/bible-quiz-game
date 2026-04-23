@@ -24,7 +24,6 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
   const totalQuestions = questions.length;
 
-  // On mount: retrieve stored user data, otherwise redirect to login
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
@@ -36,7 +35,6 @@ export default function Home() {
     }
   }, [router]);
 
-  // Auto-save when quiz finishes
   useEffect(() => {
     if (gameState === 'finished' && !saved && ventName && phone) {
       saveResult();
@@ -102,6 +100,11 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
         <div className="text-center">
+          <img
+            src="/vent logo.png"
+            alt="Christian Vent Logo"
+            className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
+          />
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4">📖 Bible Quiz</h1>
           <p className="text-white/80 mb-8">Test your knowledge of the Bible</p>
           <button onClick={startGame} className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition">
@@ -169,7 +172,7 @@ export default function Home() {
     );
   }
 
-  // Finished screen (score + leaderboard, no name/phone inputs)
+  // Finished screen (score + leaderboard)
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30">

@@ -7,12 +7,10 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
 
-  // Check if user already logged in
   useEffect(() => {
     const savedName = localStorage.getItem('ventName');
     const savedPhone = localStorage.getItem('phone');
     if (savedName && savedPhone) {
-      // Auto redirect to quiz
       router.push('/');
     }
   }, [router]);
@@ -23,7 +21,6 @@ export default function Login() {
       setError('Please fill in both fields');
       return;
     }
-    // Simple phone validation (optional)
     const phoneRegex = /^[0-9+\-\s()]{8,20}$/;
     if (!phoneRegex.test(phone.trim())) {
       setError('Please enter a valid phone number');
@@ -38,7 +35,12 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full border border-[#FFD966]/30 shadow-xl">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-4">📖</div>
+          <img
+            src="/vent logo.png"
+            alt="Christian Vent Logo"
+            className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
+          />
+          <div className="text-5xl mb-2">📖</div>
           <h1 className="text-3xl font-bold text-[#FFD966]">Christian Vent</h1>
           <p className="text-white/70 mt-2">Test your Bible knowledge</p>
         </div>
