@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
 
 export default function Login() {
   const router = useRouter();
@@ -7,13 +8,10 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const savedName = localStorage.getItem('ventName');
-    const savedPhone = localStorage.getItem('phone');
-    if (savedName && savedPhone) {
-      router.push('/');
-    }
-  }, [router]);
+  // If already logged in (but now we require fresh entry each time, we don't redirect)
+  // We keep only the check to avoid redirecting to quiz if not needed.
+  // Actually we want fresh entry each time, so no auto-redirect.
+  // But if user already took quiz, they should see blocked screen – handled by index.
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,67 +24,75 @@ export default function Login() {
       setError('Please enter a valid phone number');
       return;
     }
+    // Store in localStorage for this session only (will be cleared on logout)
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
     router.push('/');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3c2c] to-[#2a4a35] flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full border border-[#FFD966]/30 shadow-xl">
+    <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 max-w-md w-full border border-white/10 shadow-2xl"
+      >
         <div className="text-center mb-8">
           <img
             src="/vent logo.png"
             alt="Christian Vent Logo"
-            className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
+            className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover"
           />
-          <h1 className="text-3xl font-bold text-[#FFD966]">Christian Vent</h1>
-          <p className="text-white/70 mt-2">Test your Bible knowledge</p>
+          <h1 className="text-3xl font-bold text-[#FFD966] tracking-tight">Christian Vent</h1>
+          <p className="text-white/50 text-sm mt-1 font-light">Test your Bible knowledge</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-white/80 mb-1 text-sm font-medium">Vent Name</label>
+            <label className="block text-white/70 text-sm font-medium mb-1">Vent Name</label>
             <input
               type="text"
               value={ventName}
               onChange={(e) => setVentName(e.target.value)}
               placeholder="e.g., FaithfulServant"
-              className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
+              className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
-            <p className="text-white/50 text-xs mt-1">This is how you will appear anonymously</p>
+            <p className="text-white/40 text-xs mt-1 font-light">This is how you will appear anonymously</p>
           </div>
 
           <div>
-            <label className="block text-white/80 mb-1 text-sm font-medium">Phone Number</label>
+            <label className="block text-white/70 text-sm font-medium mb-1">Phone Number</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g., +251912345678"
-              className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
+              className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
-            <p className="text-white/50 text-xs mt-1">We'll contact you if you win a prize</p>
+            <p className="text-white/40 text-xs mt-1 font-light">We'll contact you if you win a prize</p>
           </div>
 
           {error && (
-            <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center">
+            <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center font-light">
               {error}
             </div>
           )}
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
-            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold text-lg hover:scale-105 transition"
+            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition"
           >
             Start Quiz
-          </button>
+          </motion.button>
         </form>
 
-        <p className="text-center text-white/40 text-xs mt-6">
+        <p className="text-center text-white/30 text-xs mt-6 font-light">
           Your information is safe and only used for prize notification
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
