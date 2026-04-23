@@ -13,7 +13,7 @@ const questions: Question[] = [
 
 export default function Home() {
   const router = useRouter();
-  const [gameState, setGameState] = useState<'register' | 'start' | 'playing' | 'finished'>('register');
+  const [gameState, setGameState] = useState<'start' | 'playing' | 'finished'>('start');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -25,59 +25,38 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [registerError, setRegisterError] = useState('');
   const totalQuestions = questions.length;
 
-  // No localStorage – we check block based on phone only (if user tries to submit a new quiz with same phone)
-  // But since we allow retake only after admin deletes, we don't pre‑block on page load.
-  // Instead, we'll check inside handleRegister before starting.
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ventName.trim() || !phone.trim()) {
-      setRegisterError('Please fill in both fields');
-      return;
-    }
-    const phoneRegex = /^[0-9+\-\s()]{8,20}$/;
-    if (!phoneRegex.test(phone.trim())) {
-      setRegisterError('Please enter a valid phone number');
-      return;
-    }
-    // Check if this phone already completed the quiz
-    try {
-      const res = await fetch(`/api/check-completed?phone=${encodeURIComponent(phone.trim())}`);
-      const data = await res.json();
-      if (data.completed) {
-        setRegisterError('This phone number has already taken the quiz. Contact admin if you believe this is an error.');
-        return;
-      }
-    } catch (err) {
-      setRegisterError('Network error, please try again');
-      return;
-    }
-    // Proceed to start screen
-    setGameState('start');
-    setRegisterError('');
-  };
-
-  const startGame = () => {
-    setGameState('playing');
-    setCurrentIndex(0);
-    setScore(0);
-    setSelectedOption(null);
-    setFeedback(null);
-    setSaved(false);
-    setLeaderboard([]);
-  };
-
+  // On mount: check login and completion status (Redis lock)
   useEffect(() => {
-    // No localStorage, just finish loading state
-    setTimeout(() => setIsLoading(false), 300);
-  }, []);
+    const storedName = localStorage.getItem('ventName');
+    const storedPhone = localStorage.getItem('phone');
+    if (!storedName || !storedPhone) {
+      router.push('/login');
+      return;
+    }
+    setVentName(storedName);
+    setPhone(storedPhone);
 
-  // Timer effect (same as before)
+    // Verify completion flag from Redis – this is critical
+    fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.completed) {
+          setIsBlocked(true);
+          setGameState('finished'); // show blocked screen
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Completion check failed:', err);
+        setIsLoading(false);
+      });
+  }, [router]);
+
+  // Timer effect (only if not blocked)
   useEffect(() => {
-    if (gameState !== 'playing' || feedback !== null) return;
+    if (gameState !== 'playing' || feedback !== null || isBlocked) return;
     setTimeLeft(30);
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -101,10 +80,21 @@ export default function Home() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions]);
+  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions, isBlocked]);
+
+  const startGame = () => {
+    if (isBlocked) return;
+    setGameState('playing');
+    setCurrentIndex(0);
+    setScore(0);
+    setSelectedOption(null);
+    setFeedback(null);
+    setSaved(false);
+    setLeaderboard([]);
+  };
 
   const handleAnswer = () => {
-    if (selectedOption === null || feedback !== null) return;
+    if (selectedOption === null || feedback !== null || isBlocked) return;
     const isCorrect = selectedOption === questions[currentIndex].correctAnswer;
     setFeedback(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) {
@@ -138,7 +128,7 @@ export default function Home() {
       });
       if (res.ok) {
         setSaved(true);
-        // Set completion flag
+        // Set completion flag in Redis
         await fetch('/api/set-completed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -156,11 +146,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (gameState === 'finished' && !saved && ventName && phone) {
+    if (gameState === 'finished' && !saved && ventName && phone && !isBlocked) {
       saveResult();
     }
-  }, [gameState, saved, ventName, phone]);
+  }, [gameState, saved, ventName, phone, isBlocked]);
 
+  // Loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center">
@@ -169,65 +160,32 @@ export default function Home() {
     );
   }
 
-  // Registration screen
-  if (gameState === 'register') {
+  // Blocked screen (already taken) – no start button, no way to play
+  if (isBlocked) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
       >
-        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full border border-[#FFD966]/30 shadow-xl">
-          <div className="text-center mb-8">
-            <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
-            <h1 className="text-3xl font-bold text-[#FFD966]">Bible Quiz</h1>
-            <p className="text-white/70 mt-2">Enter your details to begin</p>
-          </div>
-
-          <form onSubmit={handleRegister} className="space-y-5">
-            <div>
-              <label className="block text-white/80 mb-1 text-sm font-medium">Your Name</label>
-              <input
-                type="text"
-                value={ventName}
-                onChange={(e) => setVentName(e.target.value)}
-                placeholder="e.g., FaithfulServant"
-                className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
-              />
-              <p className="text-white/50 text-xs mt-1">How you will appear on the leaderboard</p>
-            </div>
-
-            <div>
-              <label className="block text-white/80 mb-1 text-sm font-medium">Phone Number</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g., +251912345678"
-                className="w-full p-3 rounded-xl bg-black/30 text-white placeholder-white/50 border border-white/10 focus:border-[#FFD966] focus:outline-none transition"
-              />
-              <p className="text-white/50 text-xs mt-1">We will contact you if you win</p>
-            </div>
-
-            {registerError && (
-              <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center">
-                {registerError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold text-lg hover:scale-105 transition"
-            >
-              Continue
-            </button>
-          </form>
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
+          <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
+          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              router.push('/login');
+            }}
+            className="mt-6 bg-[#FFD966] text-[#1e3c2c] px-4 py-2 rounded-full text-sm"
+          >
+            Try Another Number
+          </button>
         </div>
       </motion.div>
     );
   }
 
-  // Start screen (shown after registration)
+  // Start screen (only if not blocked)
   if (gameState === 'start') {
     return (
       <motion.div
@@ -243,7 +201,7 @@ export default function Home() {
         >
           <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
-          <p className="text-white/80 mb-8 text-lg">Ready to test your knowledge?</p>
+          <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -257,7 +215,7 @@ export default function Home() {
     );
   }
 
-  // Playing screen (unchanged)
+  // Playing screen
   if (gameState === 'playing') {
     const q = questions[currentIndex];
     return (
@@ -323,7 +281,7 @@ export default function Home() {
     );
   }
 
-  // Finished screen (score + leaderboard)
+  // Finished screen
   return (
     <motion.div
       initial={{ opacity: 0 }}

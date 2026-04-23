@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 
@@ -49,7 +49,6 @@ export default function Login() {
               type="text"
               value={ventName}
               onChange={(e) => setVentName(e.target.value)}
-              placeholder="e.g., FaithfulServant"
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
           </div>
@@ -60,7 +59,6 @@ export default function Login() {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="e.g., +251912345678"
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
           </div>
