@@ -3,11 +3,14 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const redis = Redis.fromEnv();
 
+// Use the same secret as in admin.tsx (change to your own)
+const ADMIN_SECRET = 'wOUR/4426/11'; // ← change to a strong secret
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') return res.status(405).end();
   const { name, phone, secret } = req.query;
 
-  if (secret !== 'your-admin-secret') {
+  if (secret !== ADMIN_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   if (!name && !phone) {
@@ -24,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (typeof value === 'string') {
         parsed = JSON.parse(value);
       } else {
-        parsed = value; // already an object
+        parsed = value;
       }
       if (parsed.name === name || parsed.phone === phone) {
         keyToDelete = key;
@@ -37,11 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Delete from hash
     await redis.hdel('results', keyToDelete);
-    // Delete from leaderboard
     await redis.zrem('leaderboard', userEntry.name);
-    // Delete completion flag
     await redis.del(`completed:${userEntry.phone}`);
     await redis.del(`completed:${userEntry.name}`);
 
