@@ -12,7 +12,7 @@ const questions: Question[] = [
   { id: 5, text: "የማቱሳላ አባት ነኝ እኔ  ማን ነኝ?", options: ["ዳዊት", "እስራኤል", "ኖህ", "ሄኖክ"], correctAnswer: 3 },
   { id: 6, text: "በራእይ መጽሐፍ ውስጥ የመጨረሻው ቃል ምንድን ነው?", options: ["ጌታ", "ክርስቶስ", "ኢየሱስ", "አሜን"], correctAnswer: 3 },
   { id: 7, text: "እስራኤላውያን የሞተውን ሰው ወደ መቃብር ጣሉት እና የዚህ ነቢይ አፅም ሲነካው እንደገና ሕያው ሆነ ይህ ነብይ ማነው?", options: ["ኢሳይያስ", "ሳሙኤል", "ኤልሳዕ", "ናታን"], correctAnswer: 2 },
-  { id: 8, text: "የፊልሞናን መጽሐፍ የጻፈው ማን ነው?", options: ["ፊልሞና", "ሉቃስ", "ዮሃንስ", "ጳውሎስ"], correctAnswer: 0 },
+  { id: 8, text: "የፊልሞናን መጽሐፍ የጻፈው ማን ነው?", options: ["ፊልሞና", "ሉቃስ", "ዮሃንስ", "ጳውሎስ"], correctAnswer: 3 },
   { id: 9, text: "የእስራኤል ልጆች በረሃብ ወቅት ከዮሴፍ ምን ሊገዙ መጡ?", options: ["የእርሻ መሳሪያዎች", "እንስሳት", "እህል", "ስጋ"], correctAnswer: 2 },
   { id: 10, text: "ከአሥራ ሁለቱ ደቀ መዛሙርት ኢየሱስ የማንን አማች ፈወሰ?", options: ["ስምዖን ጴጥሮስ", "እንድሪያስ", "ያዕቆብ", "ዮሐንስ"], correctAnswer: 0 },
 ];
@@ -337,12 +337,46 @@ export default function Home() {
                       <span>{idx+1}. {user.name}</span>
                       <span>{user.score} pts</span>
                     </div>
+
                   ))}
                 </div>
               </div>
             )}
           </>
         )}
+      </div>
+      <div className="mt-4 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
+            if (navigator.share) {
+              navigator.share({
+                title: 'My Bible Quiz Score',
+                text: message,
+                url: window.location.origin,
+              }).catch(() => {
+                navigator.clipboard.writeText(message);
+                alert('Score copied to clipboard!');
+              });
+            } else {
+              navigator.clipboard.writeText(message);
+              alert('Score copied to clipboard!');
+            }
+          }}
+          className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm transition"
+        >
+          📤 Share My Score
+        </button>
+        <button
+          onClick={() => {
+            const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!`;
+            const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+          }}
+          className="w-full bg-[#0088cc] hover:bg-[#0077b3] text-white px-4 py-2 rounded-full text-sm transition"
+        >
+          📢 Share on Telegram
+        </button>
       </div>
     </motion.div>
   );
