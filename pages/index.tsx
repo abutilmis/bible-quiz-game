@@ -224,6 +224,15 @@ export default function Home() {
           >
             Start Quiz
           </motion.button>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              router.push('/login');
+            }}
+            className="mt-4 bg-white/10 text-white px-4 py-2 rounded-full text-sm hover:bg-white/20 transition"
+          >
+            ↻ Switch Account / Logout
+          </button>
         </motion.div>
       </motion.div>
     );
