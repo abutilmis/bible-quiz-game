@@ -6,9 +6,15 @@ import { Question } from '../types';
 
 const questions: Question[] = [
   { id: 1, text: "ሉሲፈር የሚለው ቃል ምን ማለት ነው?", options: ["የከበረ", "የንጋትልጅ የአጥብያ ኮከብ", "ክፉ", "እሳት"], correctAnswer: 1 },
-  { id: 2, text: "How many days did God take to create the heavens and the earth?", options: ["5", "6", "7", "8"], correctAnswer: 1 },
-  { id: 3, text: "Who was thrown into the lions' den?", options: ["Daniel", "David", "Jonah", "Joseph"], correctAnswer: 0 },
-  { id: 4, text: "What is the first commandment?", options: ["Do not kill", "Honor your parents", "No other gods before Me", "Keep the Sabbath"], correctAnswer: 2 },
+  { id: 2, text: "ኤልሳዕ ለምጻሙ ንዕማን ስንት ጊዜ እንዲታጠብ አዘዘው?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+  { id: 3, text: "ማርቆስ መጽሐፉን የጀመረው በኢየሱስ ሕይወት ውስጥ በየትኛው ወቅት ላይ ነው?", options: ["ከመወለዱ በፊት", "ጥምቀቱ", "ሲወለድ", "ፈተናው"], correctAnswer: 1 },
+  { id: 4, text: "ሊወግሩኝ ድንጋይ ባነሱ ጊዜ ተሰወርኩባቸው እኔ ማን ነኝ?", options: ["እስጢፋኖስ", "አመንዝራዋ ሴት", "ጳውሎስ", "መልስ አልተሰጠም"], correctAnswer: 3 },
+  { id: 5, text: "የማቱሳላ አባት ነኝ እኔ  ማን ነኝ?", options: ["ዳዊት", "እስራኤል", "ኖህ", "ሄኖክ"], correctAnswer: 3 },
+  { id: 6, text: "በራእይ መጽሐፍ ውስጥ የመጨረሻው ቃል ምንድን ነው?", options: ["ጌታ", "ክርስቶስ", "ኢየሱስ", "አሜን"], correctAnswer: 3 },
+  { id: 7, text: "እስራኤላውያን የሞተውን ሰው ወደ መቃብር ጣሉት እና የዚህ ነቢይ አፅም ሲነካው እንደገና ሕያው ሆነ ይህ ነብይ ማነው?", options: ["ኢሳይያስ", "ሳሙኤል", "ኤልሳዕ", "ናታን"], correctAnswer: 2 },
+  { id: 8, text: "የፊልሞናን መጽሐፍ የጻፈው ማን ነው?", options: ["ፊልሞና", "ሉቃስ", "ዮሃንስ", "ጳውሎስ"], correctAnswer: 0 },
+  { id: 9, text: "የእስራኤል ልጆች በረሃብ ወቅት ከዮሴፍ ምን ሊገዙ መጡ?", options: ["የእርሻ መሳሪያዎች", "እንስሳት", "እህል", "ስጋ"], correctAnswer: 2 },
+  { id: 10, text: "ከአሥራ ሁለቱ ደቀ መዛሙርት ኢየሱስ የማንን አማች ፈወሰ?", options: ["ስምዖን ጴጥሮስ", "እንድሪያስ", "ያዕቆብ", "ዮሐንስ"], correctAnswer: 2 },
 ];
 
 export default function Home() {
