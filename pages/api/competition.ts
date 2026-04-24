@@ -2,7 +2,7 @@ import { Redis } from '@upstash/redis';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const redis = Redis.fromEnv();
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'your-admin-secret';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'wOUR/4426/11';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
