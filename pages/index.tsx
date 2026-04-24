@@ -21,6 +21,9 @@ export default function Home() {
   const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [saved, setSaved] = useState(false);
+  const [competitionActive, setCompetitionActive] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState('');
+  const [competitionLoading, setCompetitionLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +40,43 @@ export default function Home() {
     }
     setVentName(storedName);
     setPhone(storedPhone);
+    // Fetch competition times
+    fetch('/api/competition')
+      .then(res => res.json())
+      .then(data => {
+        if (data.start && data.end) {
+          const now = Date.now();
+          const start = Number(data.start);
+          const end = Number(data.end);
+          if (now < start) {
+            setCompetitionActive(false);
+            setTimeRemaining('Competition not started yet');
+          } else if (now > end) {
+            setCompetitionActive(false);
+            setTimeRemaining('Competition ended');
+          } else {
+            setCompetitionActive(true);
+            const interval = setInterval(() => {
+              const diff = end - Date.now();
+              if (diff <= 0) {
+                setCompetitionActive(false);
+                clearInterval(interval);
+                setTimeRemaining('Competition ended');
+              } else {
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                setTimeRemaining(`${days}d ${hours}h ${minutes}m left`);
+              }
+            }, 1000);
+            return () => clearInterval(interval);
+          }
+        } else {
+          setCompetitionActive(true);
+        }
+        setCompetitionLoading(false);
+      })
+      .catch(() => setCompetitionLoading(false));
 
     // Verify completion flag from Redis – this is critical
     fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
@@ -115,12 +155,14 @@ export default function Home() {
   const saveResult = async () => {
     if (saved) return;
     try {
+      const telegramUsername = localStorage.getItem('telegramUsername') || '';
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: ventName,
           phone,
+          telegramUsername,
           score,
           totalQuestions,
           answers: questions.map(q => q.correctAnswer)
@@ -202,11 +244,20 @@ export default function Home() {
           <img src="/vent logo.png" alt="Logo" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-lg border-2 border-[#FFD966] object-cover" />
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
           <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
+          {competitionLoading ? (
+            <div className="spinner mx-auto my-4"></div>
+          ) : (
+            <>
+              {!competitionActive && <p className="text-red-400 mb-4">{timeRemaining}</p>}
+              {competitionActive && <p className="text-white/60 mb-2">⏳ {timeRemaining}</p>}
+            </>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={startGame}
-            className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition"
+            disabled={!competitionActive}
+            className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Start Quiz
           </motion.button>

@@ -9,9 +9,20 @@ export default function Admin() {
   const [results, setResults] = useState<UserResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [competitionStart, setCompetitionStart] = useState('');
+  const [competitionEnd, setCompetitionEnd] = useState('');
 
   useEffect(() => {
-    if (authenticated) fetchResults();
+    if (authenticated) {
+      fetchResults();
+      fetch('/api/competition')
+        .then(res => res.json())
+        .then(data => {
+          if (data.start) setCompetitionStart(new Date(Number(data.start)).toISOString().slice(0,16));
+          if (data.end) setCompetitionEnd(new Date(Number(data.end)).toISOString().slice(0,16));
+        })
+        .catch(console.error);
+    }
   }, [authenticated]);
 
   const fetchResults = async () => {
@@ -95,6 +106,45 @@ export default function Admin() {
             <button onClick={() => window.location.href = `tel:${winner.phone}`} className="mt-4 bg-green-600 px-4 py-2 rounded text-white">📞 Call Winner</button>
           </div>
         )}
+        <div className="bg-white/10 backdrop-blur p-6 rounded-2xl mb-8">
+          <h2 className="text-xl text-[#FFD966] mb-4">Competition Settings</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/80 mb-1">Start Time (UTC)</label>
+              <input
+                type="datetime-local"
+                value={competitionStart}
+                onChange={(e) => setCompetitionStart(e.target.value)}
+                className="w-full p-2 rounded bg-black/50 text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-white/80 mb-1">End Time (UTC)</label>
+              <input
+                type="datetime-local"
+                value={competitionEnd}
+                onChange={(e) => setCompetitionEnd(e.target.value)}
+                className="w-full p-2 rounded bg-black/50 text-white"
+              />
+            </div>
+          </div>
+          <button onClick={async () => {
+            const secret = 'your-admin-secret'; // must match ADMIN_SECRET in competition.ts
+            const res = await fetch('/api/competition', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                secret,
+                start: new Date(competitionStart).getTime(),
+                end: new Date(competitionEnd).getTime()
+              })
+            });
+            if (res.ok) alert('Competition times saved!');
+            else alert('Failed to save');
+          }} className="mt-4 bg-[#FFD966] text-[#1e3c2c] px-4 py-2 rounded">
+            Save Competition Period
+          </button>
+        </div>
         {sorted.length === 0 ? (
           <div className="text-white/70 text-center p-8">No results yet. Share the quiz link with users!</div>
         ) : (

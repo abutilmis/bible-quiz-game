@@ -7,6 +7,7 @@ export default function Login() {
   const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+  const [telegramUsername, setTelegramUsername] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,7 @@ export default function Login() {
     }
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
+    localStorage.setItem('telegramUsername', telegramUsername.trim());
     router.push('/');
   };
 
@@ -59,6 +61,16 @@ export default function Login() {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
+            />
+          </div>
+          <div>
+            <label className="block text-white/70 text-sm font-medium mb-1">Telegram Username</label>
+            <input
+              type="text"
+              value={telegramUsername}
+              onChange={(e) => setTelegramUsername(e.target.value)}
+              placeholder="@username"
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
           </div>

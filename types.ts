@@ -14,4 +14,5 @@ export interface UserResult {
   percentage: number;
   answers: number[];
   timestamp: number;
+  telegramUsername?: string;
 }
