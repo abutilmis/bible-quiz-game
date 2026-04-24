@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 
@@ -7,8 +7,48 @@ export default function Login() {
   const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+  const [competitionActive, setCompetitionActive] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState('');
+  const [competitionLoading, setCompetitionLoading] = useState(true);
   const [telegramUsername, setTelegramUsername] = useState('');
-
+  useEffect(() => {
+  fetch('/api/competition')
+    .then(res => res.json())
+    .then(data => {
+      if (data.start && data.end) {
+        const now = Date.now();
+        const start = Number(data.start);
+        const end = Number(data.end);
+        if (now < start) {
+          setCompetitionActive(false);
+          setTimeRemaining('Competition not started yet');
+        } else if (now > end) {
+          setCompetitionActive(false);
+          setTimeRemaining('Competition ended');
+        } else {
+          setCompetitionActive(true);
+          const interval = setInterval(() => {
+            const diff = end - Date.now();
+            if (diff <= 0) {
+              setCompetitionActive(false);
+              clearInterval(interval);
+              setTimeRemaining('Competition ended');
+            } else {
+              const days = Math.floor(diff / 86400000);
+              const hours = Math.floor((diff % 86400000) / 3600000);
+              const minutes = Math.floor((diff % 3600000) / 60000);
+              setTimeRemaining(`${days}d ${hours}h ${minutes}m left`);
+            }
+          }, 1000);
+          return () => clearInterval(interval);
+        }
+      } else {
+        setCompetitionActive(true);
+      }
+      setCompetitionLoading(false);
+    })
+    .catch(() => setCompetitionLoading(false));
+}, []);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ventName.trim() || !phone.trim()) {
@@ -25,7 +65,6 @@ export default function Login() {
     localStorage.setItem('telegramUsername', telegramUsername.trim());
     router.push('/');
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
       <motion.div
@@ -43,7 +82,22 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-[#FFD966] tracking-tight">Christian Vent</h1>
           <p className="text-white/50 text-sm mt-1 font-light">Test your Bible knowledge</p>
         </div>
-
+        {competitionLoading ? (
+          <div className="spinner mx-auto my-4"></div>
+        ) : (
+          <>
+            {!competitionActive && (
+              <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center mb-4">
+                {timeRemaining}
+              </div>
+            )}
+            {competitionActive && (
+              <div className="text-white/60 text-sm text-center mb-4">
+                ⏳ Competition ends in: {timeRemaining}
+              </div>
+            )}
+          </>
+        )}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-white/70 text-sm font-medium mb-1">Vent Name</label>
@@ -85,7 +139,8 @@ export default function Login() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition"
+            disabled={!competitionActive}
+            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Start Quiz
           </motion.button>

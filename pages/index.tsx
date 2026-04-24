@@ -40,43 +40,6 @@ export default function Home() {
     }
     setVentName(storedName);
     setPhone(storedPhone);
-    // Fetch competition times
-    fetch('/api/competition')
-      .then(res => res.json())
-      .then(data => {
-        if (data.start && data.end) {
-          const now = Date.now();
-          const start = Number(data.start);
-          const end = Number(data.end);
-          if (now < start) {
-            setCompetitionActive(false);
-            setTimeRemaining('Competition not started yet');
-          } else if (now > end) {
-            setCompetitionActive(false);
-            setTimeRemaining('Competition ended');
-          } else {
-            setCompetitionActive(true);
-            const interval = setInterval(() => {
-              const diff = end - Date.now();
-              if (diff <= 0) {
-                setCompetitionActive(false);
-                clearInterval(interval);
-                setTimeRemaining('Competition ended');
-              } else {
-                const days = Math.floor(diff / 86400000);
-                const hours = Math.floor((diff % 86400000) / 3600000);
-                const minutes = Math.floor((diff % 3600000) / 60000);
-                setTimeRemaining(`${days}d ${hours}h ${minutes}m left`);
-              }
-            }, 1000);
-            return () => clearInterval(interval);
-          }
-        } else {
-          setCompetitionActive(true);
-        }
-        setCompetitionLoading(false);
-      })
-      .catch(() => setCompetitionLoading(false));
 
     // Verify completion flag from Redis – this is critical
     fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
