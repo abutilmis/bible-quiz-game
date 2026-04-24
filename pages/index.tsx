@@ -224,15 +224,17 @@ export default function Home() {
           >
             Start Quiz
           </motion.button>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               localStorage.clear();
               router.push('/login');
             }}
-            className="mt-4 bg-white/10 text-white px-4 py-2 rounded-full text-sm hover:bg-white/20 transition"
+            className="mt-4 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
           >
-            ↻ Switch Account / Logout
-          </button>
+            🔄 Switch Account
+          </motion.button>
         </motion.div>
       </motion.div>
     );

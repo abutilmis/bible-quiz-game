@@ -27,10 +27,10 @@ export default function Login() {
             const hours = Math.floor((diff % 86400000) / 3600000);
             const minutes = Math.floor((diff % 3600000) / 60000);
             const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeRemaining(`⏳ Starts in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            setTimeRemaining(`⏳ Countdown until start: ${days}d ${hours}h ${minutes}m ${seconds}s`);
           } else if (now > end) {
             setCompetitionActive(false);
-            setTimeRemaining('⛔ Competition ended');
+            setTimeRemaining('⛔ Competition has ended');
           } else {
             setCompetitionActive(true);
             const diff = end - now;
@@ -38,21 +38,27 @@ export default function Login() {
             const hours = Math.floor((diff % 86400000) / 3600000);
             const minutes = Math.floor((diff % 3600000) / 60000);
             const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeRemaining(`🔥 Ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            setTimeRemaining(`🔥 Competition ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
           }
         };
+        // Immediately update status
         updateStatus();
+        // Then set up the interval to update every second
         const interval = setInterval(updateStatus, 1000);
+        // Clear interval and stop loading
+        setCompetitionLoading(false);
         return () => clearInterval(interval);
       } else {
+        // No competition period set – always active
         setCompetitionActive(true);
-        setTimeRemaining('');
+        setTimeRemaining('📖 Open competition');
         setCompetitionLoading(false);
       }
-      setCompetitionLoading(false);
     })
-    .catch(() => {
+    .catch(err => {
+      console.error('Failed to fetch competition:', err);
       setCompetitionActive(true);
+      setTimeRemaining('📖 Open competition (no schedule)');
       setCompetitionLoading(false);
     });
 }, []);
@@ -90,10 +96,18 @@ export default function Login() {
           <p className="text-white/50 text-sm mt-1 font-light">Test your Bible knowledge</p>
         </div>
         {competitionLoading ? (
-          <div className="spinner mx-auto my-4"></div>
+          <div className="flex justify-center my-6">
+            <div className="spinner w-10 h-10 border-4 border-[#FFD966]/30 border-t-[#FFD966] rounded-full animate-spin"></div>
+          </div>
         ) : (
-          <div className={`text-center mb-4 p-2 rounded ${!competitionActive ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
-            {timeRemaining || (competitionActive ? 'Competition is active!' : 'No active competition')}
+          <div className={`text-center mb-6 p-3 rounded-xl backdrop-blur-sm ${
+            !competitionActive 
+              ? 'bg-red-500/20 border border-red-500/30 text-red-200' 
+              : 'bg-[#FFD966]/10 border border-[#FFD966]/30 text-[#FFD966]'
+          }`}>
+            <p className="font-mono text-sm md:text-base tracking-wide">
+              {timeRemaining || (competitionActive ? '✅ Competition is active! Good luck!' : '❌ No active competition')}
+            </p>
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
