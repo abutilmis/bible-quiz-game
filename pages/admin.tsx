@@ -96,7 +96,15 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#FFD966] mb-6">Admin Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-[#FFD966]">Admin Dashboard</h1>
+          <button
+            onClick={fetchResults}
+            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm transition"
+          >
+            ↻ Refresh
+          </button>
+        </div>
         {winner && (
           <div className="bg-white/10 backdrop-blur p-4 md:p-6 rounded-2xl mb-8 border border-[#FFD966]/50">
             <h2 className="text-2xl text-[#FFD966] mb-2">🏆 Winner</h2>
