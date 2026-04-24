@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { Question } from '../types';
 
 const questions: Question[] = [
-  { id: 1, text: "Who was the first man created by God?", options: ["Adam", "Eve", "Moses", "Abraham"], correctAnswer: 0 },
+  { id: 1, text: "ሉሲፈር የሚለው ቃል ምን ማለት ነው?", options: ["የከበረ", "የንጋትልጅ የአጥብያ ኮከብ", "ክፉ", "እሳት"], correctAnswer: 1 },
   { id: 2, text: "How many days did God take to create the heavens and the earth?", options: ["5", "6", "7", "8"], correctAnswer: 1 },
   { id: 3, text: "Who was thrown into the lions' den?", options: ["Daniel", "David", "Jonah", "Joseph"], correctAnswer: 0 },
   { id: 4, text: "What is the first commandment?", options: ["Do not kill", "Honor your parents", "No other gods before Me", "Keep the Sabbath"], correctAnswer: 2 },
