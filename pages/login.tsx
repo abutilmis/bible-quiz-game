@@ -16,38 +16,45 @@ export default function Login() {
     .then(res => res.json())
     .then(data => {
       if (data.start && data.end) {
-        const now = Date.now();
         const start = Number(data.start);
         const end = Number(data.end);
-        if (now < start) {
-          setCompetitionActive(false);
-          setTimeRemaining('Competition not started yet');
-        } else if (now > end) {
-          setCompetitionActive(false);
-          setTimeRemaining('Competition ended');
-        } else {
-          setCompetitionActive(true);
-          const interval = setInterval(() => {
-            const diff = end - Date.now();
-            if (diff <= 0) {
-              setCompetitionActive(false);
-              clearInterval(interval);
-              setTimeRemaining('Competition ended');
-            } else {
-              const days = Math.floor(diff / 86400000);
-              const hours = Math.floor((diff % 86400000) / 3600000);
-              const minutes = Math.floor((diff % 3600000) / 60000);
-              setTimeRemaining(`${days}d ${hours}h ${minutes}m left`);
-            }
-          }, 1000);
-          return () => clearInterval(interval);
-        }
+        const updateStatus = () => {
+          const now = Date.now();
+          if (now < start) {
+            setCompetitionActive(false);
+            const diff = start - now;
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            setTimeRemaining(`⏳ Starts in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+          } else if (now > end) {
+            setCompetitionActive(false);
+            setTimeRemaining('⛔ Competition ended');
+          } else {
+            setCompetitionActive(true);
+            const diff = end - now;
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            setTimeRemaining(`🔥 Ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+          }
+        };
+        updateStatus();
+        const interval = setInterval(updateStatus, 1000);
+        return () => clearInterval(interval);
       } else {
         setCompetitionActive(true);
+        setTimeRemaining('');
+        setCompetitionLoading(false);
       }
       setCompetitionLoading(false);
     })
-    .catch(() => setCompetitionLoading(false));
+    .catch(() => {
+      setCompetitionActive(true);
+      setCompetitionLoading(false);
+    });
 }, []);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,18 +92,9 @@ export default function Login() {
         {competitionLoading ? (
           <div className="spinner mx-auto my-4"></div>
         ) : (
-          <>
-            {!competitionActive && (
-              <div className="bg-red-500/20 text-red-300 p-2 rounded text-sm text-center mb-4">
-                {timeRemaining}
-              </div>
-            )}
-            {competitionActive && (
-              <div className="text-white/60 text-sm text-center mb-4">
-                ⏳ Competition ends in: {timeRemaining}
-              </div>
-            )}
-          </>
+          <div className={`text-center mb-4 p-2 rounded ${!competitionActive ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
+            {timeRemaining || (competitionActive ? 'Competition is active!' : 'No active competition')}
+          </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
