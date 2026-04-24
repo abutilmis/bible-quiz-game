@@ -182,15 +182,17 @@ export default function Home() {
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
           <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
           <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               localStorage.clear();
               router.push('/login');
             }}
-            className="mt-6 bg-[#FFD966] text-[#1e3c2c] px-4 py-2 rounded-full text-sm"
+            className="mt-6 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
           >
-            Try Another Number
-          </button>
+            🔄 Switch Account
+          </motion.button>
         </div>
       </motion.div>
     );
