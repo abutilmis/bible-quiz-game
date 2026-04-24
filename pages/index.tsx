@@ -191,7 +191,7 @@ export default function Home() {
             }}
             className="mt-6 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
           >
-            🔄 Switch Account
+            🔄 Logout
           </motion.button>
         </div>
       </motion.div>
@@ -241,7 +241,7 @@ export default function Home() {
             }}
             className="mt-4 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
           >
-            🔄 Switch Account
+            🔄 Logout
           </motion.button>
         </motion.div>
       </motion.div>
@@ -252,7 +252,7 @@ export default function Home() {
   if (gameState === 'playing') {
     const q = questions[currentIndex];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4 overflow-hidden">
         <div className="w-full max-w-2xl">
           <div className="flex justify-between items-center text-white/80 mb-2">
             <span>⏱️ {timeLeft}s</span>
@@ -260,10 +260,10 @@ export default function Home() {
           </div>
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
             className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 border border-[#FFD966]/30 shadow-xl"
           >
             <div className="text-white text-xl md:text-2xl font-semibold mb-6">{q.text}</div>
@@ -347,38 +347,41 @@ export default function Home() {
           </>
         )}
       </div>
-      <div className="mt-4 flex flex-col gap-2">
-        <button
-          onClick={() => {
-            const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
-            if (navigator.share) {
-              navigator.share({
-                title: 'My Bible Quiz Score',
-                text: message,
-                url: window.location.origin,
-              }).catch(() => {
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <p className="text-white/60 text-sm">Share your achievement:</p>
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
+          <button
+            onClick={() => {
+              const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
+              if (navigator.share) {
+                navigator.share({
+                  title: 'My Bible Quiz Score',
+                  text: message,
+                  url: window.location.origin,
+                }).catch(() => {
+                  navigator.clipboard.writeText(message);
+                  alert('Score copied to clipboard!');
+                });
+              } else {
                 navigator.clipboard.writeText(message);
                 alert('Score copied to clipboard!');
-              });
-            } else {
-              navigator.clipboard.writeText(message);
-              alert('Score copied to clipboard!');
-            }
-          }}
-          className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm transition"
-        >
-          📤 Share My Score
-        </button>
-        <button
-          onClick={() => {
-            const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!`;
-            const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-          }}
-          className="w-full bg-[#0088cc] hover:bg-[#0077b3] text-white px-4 py-2 rounded-full text-sm transition"
-        >
-          📢 Share on Telegram
-        </button>
+              }
+            }}
+            className="flex-1 bg-[#FFD966]/20 hover:bg-[#FFD966]/30 text-[#FFD966] border border-[#FFD966]/40 px-4 py-2 rounded-full text-sm transition text-center"
+          >
+            📤 Copy Score
+          </button>
+          <button
+            onClick={() => {
+              const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!`;
+              const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
+              window.open(url, '_blank');
+            }}
+            className="flex-1 bg-[#0088cc]/20 hover:bg-[#0088cc]/30 text-[#0088cc] border border-[#0088cc]/40 px-4 py-2 rounded-full text-sm transition text-center"
+          >
+            📢 Share on Telegram
+          </button>
+        </div>
       </div>
     </motion.div>
   );
