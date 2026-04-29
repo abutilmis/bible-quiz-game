@@ -4,6 +4,13 @@ import { UserResult } from '../types';
 const ADMIN_SECRET = 'wOUR/4426/11'; // same as in API
 
 export default function Admin() {
+  const formatDuration = (seconds: number) => {
+    if (!seconds || seconds <= 0) return '0s';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins === 0) return `${secs}s`;
+    return `${mins}m ${secs}s`;
+  };
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [results, setResults] = useState<UserResult[]>([]);
@@ -163,21 +170,25 @@ export default function Admin() {
                   <th className="p-3 border border-white/20">Rank</th>
                   <th className="p-3 border border-white/20">Name</th>
                   <th className="p-3 border border-white/20">Phone</th>
+                  <th className="p-3 border border-white/20">Telegram Username</th>
                   <th className="p-3 border border-white/20">Score</th>
                   <th className="p-3 border border-white/20">%</th>
+                  <th className="p-3 border border-white/20">Duration</th>
                   <th className="p-3 border border-white/20">Date</th>
                   <th className="p-3 border border-white/20">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.map((user, idx) => (
-                  <tr key={user.id} className={idx === 0 ? 'bg-yellow-900/30' : 'hover:bg-white/5'}>
-                    <td className="p-3 border border-white/10">{idx + 1}</td>
-                    <td className="p-3 border border-white/10">{user.name}</td>
-                    <td className="p-3 border border-white/10">{user.phone}</td>
-                    <td className="p-3 border border-white/10">{user.score}/{user.totalQuestions}</td>
-                    <td className="p-3 border border-white/10">{user.percentage}%</td>
-                    <td className="p-3 border border-white/10">{new Date(user.timestamp).toLocaleString()}</td>
+                  <tr key={user.id} className={idx === 0 ? 'bg-yellow-500/20' : 'bg-white/10'}>
+                    <td className="p-3 border border-white/20 text-center">{idx + 1}</td>
+                    <td className="p-3 border border-white/20">{user.name}</td>
+                    <td className="p-3 border border-white/20">{user.phone}</td>
+                    <td className="p-3 border border-white/20">{user.telegramUsername || '-'}</td>
+                    <td className="p-3 border border-white/20 text-center">{user.score}/{user.totalQuestions}</td>
+                    <td className="p-3 border border-white/20 text-center">{user.percentage}%</td>
+                    <td className="p-3 border border-white/20 text-center">{Math.round(user.duration / 1000)}s</td>
+                    <td className="p-3 border border-white/20 text-center">{new Date(user.timestamp).toLocaleString()}</td>
                     <td className="p-3 border border-white/10">
                       <button
                         onClick={() => deleteUser(user.name, user.phone)}
