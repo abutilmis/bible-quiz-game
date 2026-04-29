@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 
@@ -7,61 +7,8 @@ export default function Login() {
   const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
-  const [competitionActive, setCompetitionActive] = useState(true);
-  const [timeRemaining, setTimeRemaining] = useState('');
-  const [competitionLoading, setCompetitionLoading] = useState(true);
   const [telegramUsername, setTelegramUsername] = useState('');
-  useEffect(() => {
-  fetch('/api/competition')
-    .then(res => res.json())
-    .then(data => {
-      if (data.start && data.end) {
-        const start = Number(data.start);
-        const end = Number(data.end);
-        const updateStatus = () => {
-          const now = Date.now();
-          if (now < start) {
-            setCompetitionActive(false);
-            const diff = start - now;
-            const days = Math.floor(diff / 86400000);
-            const hours = Math.floor((diff % 86400000) / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeRemaining(`⏳ Countdown until start: ${days}d ${hours}h ${minutes}m ${seconds}s`);
-          } else if (now > end) {
-            setCompetitionActive(false);
-            setTimeRemaining('⛔ Competition has ended');
-          } else {
-            setCompetitionActive(true);
-            const diff = end - now;
-            const days = Math.floor(diff / 86400000);
-            const hours = Math.floor((diff % 86400000) / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeRemaining(`🔥 Competition ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
-          }
-        };
-        // Immediately update status
-        updateStatus();
-        // Then set up the interval to update every second
-        const interval = setInterval(updateStatus, 1000);
-        // Clear interval and stop loading
-        setCompetitionLoading(false);
-        return () => clearInterval(interval);
-      } else {
-        // No competition period set – always active
-        setCompetitionActive(true);
-        setTimeRemaining('📖 Open competition');
-        setCompetitionLoading(false);
-      }
-    })
-    .catch(err => {
-      console.error('Failed to fetch competition:', err);
-      setCompetitionActive(true);
-      setTimeRemaining('📖 Open competition (no schedule)');
-      setCompetitionLoading(false);
-    });
-}, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ventName.trim() || !phone.trim()) {
@@ -78,6 +25,7 @@ export default function Login() {
     localStorage.setItem('telegramUsername', telegramUsername.trim());
     router.push('/');
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4">
       <motion.div
@@ -95,21 +43,7 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-[#FFD966] tracking-tight">Christian Vent</h1>
           <p className="text-white/50 text-sm mt-1 font-light">Test your Bible knowledge</p>
         </div>
-        {competitionLoading ? (
-          <div className="flex justify-center my-6">
-            <div className="spinner w-10 h-10 border-4 border-[#FFD966]/30 border-t-[#FFD966] rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className={`text-center mb-6 p-3 rounded-xl backdrop-blur-sm ${
-            !competitionActive 
-              ? 'bg-red-500/20 border border-red-500/30 text-red-200' 
-              : 'bg-[#FFD966]/10 border border-[#FFD966]/30 text-[#FFD966]'
-          }`}>
-            <p className="font-mono text-sm md:text-base tracking-wide">
-              {timeRemaining || (competitionActive ? '✅ Competition is active! Good luck!' : '❌ No active competition')}
-            </p>
-          </div>
-        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-white/70 text-sm font-medium mb-1">Vent Name</label>
@@ -130,6 +64,7 @@ export default function Login() {
               className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-white/30 border border-white/20 focus:border-[#FFD966] focus:outline-none transition text-sm font-normal"
             />
           </div>
+
           <div>
             <label className="block text-white/70 text-sm font-medium mb-1">Telegram Username</label>
             <input
@@ -151,10 +86,9 @@ export default function Login() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={!competitionActive}
-            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition"
           >
-            Start Quiz
+            Login
           </motion.button>
         </form>
 
