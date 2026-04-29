@@ -15,4 +15,5 @@ export interface UserResult {
   answers: number[];
   timestamp: number;
   telegramUsername?: string;
+  duration: number;
 }

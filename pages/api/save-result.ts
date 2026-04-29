@@ -6,7 +6,7 @@ const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
-  const { name, phone, telegramUsername, score, totalQuestions, answers } = req.body;
+  const { name, phone, telegramUsername, score, totalQuestions, duration, answers } = req.body;
   if (!name || !phone || score === undefined) return res.status(400).json({ error: 'Missing fields' });
 
   const id = Date.now().toString();
@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     score,
     totalQuestions,
     percentage: Math.round((score / totalQuestions) * 100),
+    duration: duration || 0,
     answers,
     timestamp: Date.now()
   };

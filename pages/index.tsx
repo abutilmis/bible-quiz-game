@@ -31,10 +31,19 @@ export default function Home() {
   const [timeRemaining, setTimeRemaining] = useState('');
   const [competitionLoading, setCompetitionLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [publicLeaderboard, setPublicLeaderboard] = useState<any[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
   const totalQuestions = questions.length;
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins === 0) return `${secs}s`;
+    return `${mins}m ${secs}s`;
+  };
 
   // On mount: check login and completion status (Redis lock)
   useEffect(() => {
@@ -92,6 +101,7 @@ export default function Home() {
   }, [gameState, currentIndex, feedback, selectedOption, totalQuestions, isBlocked]);
 
   const startGame = () => {
+    localStorage.setItem('quizStartTime', Date.now().toString());
     if (isBlocked) return;
     setGameState('playing');
     setCurrentIndex(0);
@@ -100,6 +110,19 @@ export default function Home() {
     setFeedback(null);
     setSaved(false);
     setLeaderboard([]);
+  };
+  const fetchPublicLeaderboard = async () => {
+    setLoadingLeaderboard(true);
+    try {
+      const res = await fetch('/api/leaderboard-public');
+      const data = await res.json();
+      setPublicLeaderboard(data);
+      setShowLeaderboardModal(true);
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
   };
 
   const handleAnswer = () => {
@@ -125,6 +148,12 @@ export default function Home() {
     if (saved) return;
     try {
       const telegramUsername = localStorage.getItem('telegramUsername') || '';
+      const startTime = localStorage.getItem('quizStartTime');
+      let duration = 0;
+      if (startTime) {
+        duration = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+        localStorage.removeItem('quizStartTime');
+      }
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,6 +163,7 @@ export default function Home() {
           telegramUsername,
           score,
           totalQuestions,
+          duration,
           answers: questions.map(q => q.correctAnswer)
         })
       });
@@ -182,6 +212,7 @@ export default function Home() {
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
           <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
           <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -193,6 +224,50 @@ export default function Home() {
           >
             🔄 Logout
           </motion.button>
+
+          {/* View Leaderboard button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={fetchPublicLeaderboard}
+            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+          >
+            🏆 View Leaderboard
+          </motion.button>
+
+          {/* Leaderboard Modal */}
+          {showLeaderboardModal && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-[#FFD966]">🏆 Leaderboard</h2>
+                  <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
+                </div>
+                {loadingLeaderboard ? (
+                  <div className="spinner mx-auto my-8"></div>
+                ) : publicLeaderboard.length === 0 ? (
+                  <p className="text-white/60 text-center py-4">No results yet. Be the first!</p>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {publicLeaderboard.map((user, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#FFD966] font-mono w-6">{idx + 1}</span>
+                          <span className="text-white/90">{user.name}</span>
+                        </div>
+                        <div className="flex gap-4 text-right">
+                          <span className="text-[#FFD966] font-bold">
+                            {user.score}/{totalQuestions}
+                          </span>
+                          <span className="text-white/50 text-sm">{formatDuration(user.duration)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     );
@@ -243,6 +318,44 @@ export default function Home() {
           >
             🔄 Logout
           </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={fetchPublicLeaderboard}
+            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+          >
+            🏆 View Leaderboard
+          </motion.button>
+          {showLeaderboardModal && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-[#FFD966]">🏆 Leaderboard</h2>
+                  <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
+                </div>
+                {loadingLeaderboard ? (
+                  <div className="spinner mx-auto my-8"></div>
+                ) : publicLeaderboard.length === 0 ? (
+                  <p className="text-white/60 text-center py-4">No results yet. Be the first!</p>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {publicLeaderboard.map((user, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#FFD966] font-mono w-6">{idx+1}</span>
+                          <span className="text-white/90">{user.name}</span>
+                        </div>
+                        <div className="flex gap-4 text-right">
+                          <span className="text-[#FFD966] font-bold">{user.score}/{totalQuestions}</span>
+                          <span className="text-white/50 text-sm">{formatDuration(user.duration)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
       </motion.div>
     );
