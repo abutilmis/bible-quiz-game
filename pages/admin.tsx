@@ -97,7 +97,22 @@ export default function Admin() {
     );
   }
 
-  const sorted = [...(results || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
+  const sorted = [...(results || [])].sort((a, b) => {
+    // 1. Higher score first
+    if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+    // 2. Shorter duration first (faster completion)
+    const durA = a.duration || 0;
+    const durB = b.duration || 0;
+    if (durA !== durB) return durA - durB;
+    // 3. Earlier timestamp first
+    const tsA = a.timestamp || 0;
+    const tsB = b.timestamp || 0;
+    if (tsA !== tsB) return tsA - tsB;
+    // 4. Final tie‑breaker – use name+phone as unique fallback
+    const idA = a.id || `${a.name}-${a.phone}`;
+    const idB = b.id || `${b.name}-${b.phone}`;
+    return idA.localeCompare(idB);
+  });
   const winner = sorted.length > 0 ? sorted[0] : null;
 
   return (
@@ -187,7 +202,7 @@ export default function Admin() {
                     <td className="p-3 border border-white/20">{user.telegramUsername || '-'}</td>
                     <td className="p-3 border border-white/20 text-center">{user.score}/{user.totalQuestions}</td>
                     <td className="p-3 border border-white/20 text-center">{user.percentage}%</td>
-                    <td className="p-3 border border-white/20 text-center">{Math.round(user.duration / 1000)}s</td>
+                    <td className="p-3 border border-white/20 text-center">{formatDuration(user.duration)}</td>
                     <td className="p-3 border border-white/20 text-center">{new Date(user.timestamp).toLocaleString()}</td>
                     <td className="p-3 border border-white/10">
                       <button
