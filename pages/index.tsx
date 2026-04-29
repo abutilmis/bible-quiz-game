@@ -71,6 +71,53 @@ export default function Home() {
         setIsLoading(false);
       });
   }, [router]);
+    // Fetch competition status for start screen
+  useEffect(() => {
+    fetch('/api/competition')
+      .then(res => res.json())
+      .then(data => {
+        if (data.start && data.end) {
+          const start = Number(data.start);
+          const end = Number(data.end);
+          const updateStatus = () => {
+            const now = Date.now();
+            if (now < start) {
+              setCompetitionActive(false);
+              const diff = start - now;
+              const days = Math.floor(diff / 86400000);
+              const hours = Math.floor((diff % 86400000) / 3600000);
+              const minutes = Math.floor((diff % 3600000) / 60000);
+              const seconds = Math.floor((diff % 60000) / 1000);
+              setTimeRemaining(`⏳ Countdown until start: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            } else if (now > end) {
+              setCompetitionActive(false);
+              setTimeRemaining('⛔ Competition has ended');
+            } else {
+              setCompetitionActive(true);
+              const diff = end - now;
+              const days = Math.floor(diff / 86400000);
+              const hours = Math.floor((diff % 86400000) / 3600000);
+              const minutes = Math.floor((diff % 3600000) / 60000);
+              const seconds = Math.floor((diff % 60000) / 1000);
+              setTimeRemaining(`🔥 Competition ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            }
+          };
+          updateStatus();
+          const interval = setInterval(updateStatus, 1000);
+          setCompetitionLoading(false);
+          return () => clearInterval(interval);
+        } else {
+          setCompetitionActive(true);
+          setTimeRemaining('📖 Open competition (no schedule)');
+          setCompetitionLoading(false);
+        }
+      })
+      .catch(() => {
+        setCompetitionActive(true);
+        setTimeRemaining('📖 Open competition');
+        setCompetitionLoading(false);
+      });
+  }, []);
 
   // Timer effect (only if not blocked)
   useEffect(() => {
