@@ -418,11 +418,10 @@ export default function Home() {
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30 shadow-2xl">
           <h2 className="text-2xl font-bold text-[#FFD966] mb-4">📖 Before You Begin</h2>
           <div className="text-white/80 space-y-3 text-left mb-6">
-            <p>✨ This quiz contains <strong className="text-[#FFD966]">{10} questions</strong>.</p>
-            <p>⏱️ You have <strong className="text-[#FFD966]">30 seconds per question</strong>.</p>
-            <p>🏆 Your score and completion time will be recorded.</p>
-            <p>🔒 You can only take this quiz <strong className="text-[#FFD966]">once</strong>.</p>
-            <p>📢 By clicking "Agree & Start", you confirm that you will answer honestly.</p>
+            <p>✨ በዛሬው ውድድር <strong className="text-[#FFD966]">{10}የጥቅስ ጥያቄዎች</strong> ይኖሩናል።</p>
+            <p>⏱️ ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</p>
+            <p>🏆 የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</p>
+            <p>🔒 ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</p>
           </div>
           <div className="flex flex-col gap-3">
             <motion.button
