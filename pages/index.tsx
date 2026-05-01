@@ -44,7 +44,21 @@ export default function Home() {
     if (mins === 0) return `${secs}s`;
     return `${mins}m ${secs}s`;
   };
-
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.frequency.value = 800;
+      gainNode.gain.value = 0.2;
+      oscillator.start();
+      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+      oscillator.stop(audioCtx.currentTime + 0.2);
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  };  
   // On mount: check login and completion status (Redis lock)
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
@@ -128,6 +142,7 @@ export default function Home() {
         if (prev <= 1) {
           clearInterval(interval);
           if (selectedOption === null) {
+            playBeep();   // sound when time runs out
             setFeedback('wrong');
             setTimeout(() => {
               if (currentIndex + 1 < totalQuestions) {
@@ -454,7 +469,7 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4 overflow-hidden">
         <div className="w-full max-w-2xl">
           <div className="flex justify-between items-center text-white/80 mb-2">
-            <span>⏱️ {timeLeft}s</span>
+            <span className={timeLeft <= 5 ? 'text-red-500 font-bold animate-pulse' : ''}>⏱️ {timeLeft}s</span>
             <span>📋 {currentIndex+1}/{totalQuestions}</span>
           </div>
           <motion.div
@@ -546,9 +561,10 @@ export default function Home() {
           </>
         )}
       </div>
-      <div className="mt-6 flex flex-col items-center gap-3">
-        <p className="text-white/60 text-sm">Share your achievement:</p>
-        <div className="flex flex-col sm:flex-row gap-3 w-full">
+      {/* Share buttons – inside the card, below leaderboard */}
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <p className="text-white/50 text-xs text-center mb-3">📢 Share your result</p>
+        <div className="flex flex-row justify-center gap-3">
           <button
             onClick={() => {
               const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
@@ -566,9 +582,9 @@ export default function Home() {
                 alert('Score copied to clipboard!');
               }
             }}
-            className="flex-1 bg-[#FFD966]/20 hover:bg-[#FFD966]/30 text-[#FFD966] border border-[#FFD966]/40 px-4 py-2 rounded-full text-sm transition text-center"
+            className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-1"
           >
-            📤 Copy Score
+            📋 Copy Score
           </button>
           <button
             onClick={() => {
@@ -576,7 +592,7 @@ export default function Home() {
               const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
               window.open(url, '_blank');
             }}
-            className="flex-1 bg-[#0088cc]/20 hover:bg-[#0088cc]/30 text-[#0088cc] border border-[#0088cc]/40 px-4 py-2 rounded-full text-sm transition text-center"
+            className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-1"
           >
             📢 Share on Telegram
           </button>
