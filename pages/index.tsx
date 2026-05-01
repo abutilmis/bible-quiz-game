@@ -19,7 +19,7 @@ const questions: Question[] = [
 
 export default function Home() {
   const router = useRouter();
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'finished'>('start');
+  const [gameState, setGameState] = useState<'start' | 'description' | 'playing' | 'finished'>('start');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -348,7 +348,7 @@ export default function Home() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={startGame}
+            onClick={() => setGameState('description')}
             disabled={!competitionActive}
             className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -407,7 +407,47 @@ export default function Home() {
       </motion.div>
     );
   }
-
+  // Description screen
+  if (gameState === 'description') {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
+      >
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30 shadow-2xl">
+          <h2 className="text-2xl font-bold text-[#FFD966] mb-4">📖 Before You Begin</h2>
+          <div className="text-white/80 space-y-3 text-left mb-6">
+            <p>✨ This quiz contains <strong className="text-[#FFD966]">{10} questions</strong>.</p>
+            <p>⏱️ You have <strong className="text-[#FFD966]">30 seconds per question</strong>.</p>
+            <p>🏆 Your score and completion time will be recorded.</p>
+            <p>🔒 You can only take this quiz <strong className="text-[#FFD966]">once</strong>.</p>
+            <p>📢 By clicking "Agree & Start", you confirm that you will answer honestly.</p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                startGame(); // this now sets gameState to 'playing'
+              }}
+              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold"
+            >
+              ✅ Agree & Start
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setGameState('start')}
+              className="bg-transparent border border-white/30 text-white/70 px-6 py-2 rounded-full text-sm"
+            >
+              ← Back
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
   // Playing screen
   if (gameState === 'playing') {
     const q = questions[currentIndex];
