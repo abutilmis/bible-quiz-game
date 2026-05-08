@@ -9,21 +9,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!resultsHash) {
       return res.status(200).json([]);
     }
-    let results = Object.values(resultsHash).map((v: any) => {
-      // If v is already an object, return it directly, otherwise parse JSON
-      if (typeof v === 'object' && v !== null) return v;
-      try {
-        return JSON.parse(v);
-      } catch {
-        return null;
-      }
-    }).filter(r => r !== null);
-    // Sort: higher score first, then earlier timestamp
+    // Safely parse each value (handle both string and object)
+    const results = Object.values(resultsHash)
+      .map((value: any) => {
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return null;
+          }
+        }
+        return value;
+      })
+      .filter(Boolean);
+    
+    // Sort: score descending, then timestamp ascending (earlier first)
     results.sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
-      return a.timestamp - b.timestamp;
+      // Use timestamp if exists, else use Infinity to push old entries to the bottom
+      const aTime = a.timestamp || Infinity;
+      const bTime = b.timestamp || Infinity;
+      return aTime - bTime;
     });
-    const top10 = results.slice(0, 10).map((r) => ({ name: r.name, score: r.score }));
+    const top10 = results.slice(0, 10).map(r => ({ name: r.name, score: r.score }));
     res.status(200).json(top10);
   } catch (error) {
     console.error('Leaderboard error:', error);

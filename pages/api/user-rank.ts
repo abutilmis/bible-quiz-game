@@ -11,19 +11,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const resultsHash = await redis.hgetall('results');
     if (!resultsHash) return res.status(200).json({ rank: null });
-    let results = Object.values(resultsHash).map((v: any) => {
-      if (typeof v === 'object' && v !== null) return v;
-      try {
-        return JSON.parse(v);
-      } catch {
-        return null;
-      }
-    }).filter(r => r !== null);
+    const results = Object.values(resultsHash)
+      .map((value: any) => {
+        if (typeof value === 'string') {
+          try { return JSON.parse(value); } catch { return null; }
+        }
+        return value;
+      })
+      .filter(Boolean);
     results.sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
-      return a.timestamp - b.timestamp;
+      const aTime = a.timestamp || Infinity;
+      const bTime = b.timestamp || Infinity;
+      return aTime - bTime;
     });
-    const index = results.findIndex((r) => r.name === name);
+    const index = results.findIndex(r => r.name === name);
     const rank = index !== -1 ? index + 1 : null;
     res.status(200).json({ rank });
   } catch (error) {
