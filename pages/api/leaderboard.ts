@@ -9,7 +9,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!resultsHash) {
       return res.status(200).json([]);
     }
-    let results = Object.values(resultsHash).map((v: any) => JSON.parse(v));
+    let results = Object.values(resultsHash).map((v: any) => {
+      // If v is already an object, return it directly, otherwise parse JSON
+      if (typeof v === 'object' && v !== null) return v;
+      try {
+        return JSON.parse(v);
+      } catch {
+        return null;
+      }
+    }).filter(r => r !== null);
     // Sort: higher score first, then earlier timestamp
     results.sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;

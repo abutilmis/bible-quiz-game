@@ -11,7 +11,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const resultsHash = await redis.hgetall('results');
     if (!resultsHash) return res.status(200).json({ rank: null });
-    let results = Object.values(resultsHash).map((v: any) => JSON.parse(v));
+    let results = Object.values(resultsHash).map((v: any) => {
+      if (typeof v === 'object' && v !== null) return v;
+      try {
+        return JSON.parse(v);
+      } catch {
+        return null;
+      }
+    }).filter(r => r !== null);
     results.sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
       return a.timestamp - b.timestamp;
