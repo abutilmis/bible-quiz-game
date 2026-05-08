@@ -364,12 +364,32 @@ export default function Home() {
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
           <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
           {competitionLoading ? (
-            <div className="spinner mx-auto my-4"></div>
+            <div className="spinner mx-auto my-8"></div>
           ) : (
-            <>
-              {!competitionActive && <p className="text-red-400 mb-4">{timeRemaining}</p>}
-              {competitionActive && <p className="text-white/60 mb-2">⏳ {timeRemaining}</p>}
-            </>
+            <div className={`relative mb-8 p-6 rounded-2xl backdrop-blur-sm overflow-hidden ${!competitionActive ? 'bg-red-500/10' : 'bg-[#FFD966]/10'}`}>
+              {/* Pulsing background when time is low (less than 10 seconds) */}
+              {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
+                <div className="absolute inset-0 bg-red-500/20 animate-pulse" />
+              )}
+
+              <div className="text-center relative z-10">
+                <p className="text-white/50 text-xs uppercase tracking-wider font-semibold mb-3">
+                  {!competitionActive 
+                    ? (timeRemaining?.includes('ended') ? 'COMPETITION CLOSED' : 'COUNTDOWN TO START')
+                    : 'TIME REMAINING'}
+                </p>
+                <div className="font-mono font-black text-4xl sm:text-6xl md:text-7xl tracking-tighter text-[#FFD966] drop-shadow-[0_0_15px_rgba(255,217,102,0.5)]">
+                  {(() => {
+                    // Extract the time part (digits, d, h, m, s) from timeRemaining
+                    const match = timeRemaining?.match(/[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?/);
+                    return match && match[0] ? match[0].trim() : (competitionActive ? 'ACTIVE' : 'INACTIVE');
+                  })()}
+                </div>
+                <p className="text-white/40 text-xs mt-3 font-mono">
+                  {timeRemaining}
+                </p>
+              </div>
+            </div>
           )}
           <motion.button
             whileHover={{ scale: 1.05 }}
