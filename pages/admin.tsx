@@ -120,12 +120,29 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-[#FFD966]">Admin Dashboard</h1>
-          <button
-            onClick={fetchResults}
-            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm transition"
-          >
-            ↻ Refresh
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={fetchResults}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm transition"
+            >
+              ↻ Refresh
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm('⚠️ WARNING: This will delete ALL quiz results. This action cannot be undone. Are you sure?')) return;
+                const res = await fetch(`/api/admin/delete-all-winners?secret=admin123`, { method: 'DELETE' });
+                if (res.ok) {
+                  alert('All results deleted');
+                  fetchResults(); // refresh the table
+                } else {
+                  alert('Failed to delete all results');
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm transition"
+            >
+              🗑 Delete All
+            </button>
+          </div>
         </div>
         {winner && (
           <div className="bg-white/10 backdrop-blur p-4 md:p-6 rounded-2xl mb-8 border border-[#FFD966]/50">
