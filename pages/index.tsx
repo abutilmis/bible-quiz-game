@@ -31,6 +31,7 @@ export default function Home() {
   const [timeRemaining, setTimeRemaining] = useState('');
   const [competitionLoading, setCompetitionLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<{ name: string; score: number }[]>([]);
+  const [userRank, setUserRank] = useState(null);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [publicLeaderboard, setPublicLeaderboard] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
@@ -205,7 +206,16 @@ export default function Home() {
       }
     }, 1500);
   };
-
+  const fetchUserRank = async (playerName: string) => {
+    try {
+      const res = await fetch(`/api/user-rank?name=${encodeURIComponent(playerName)}`);
+      const data = await res.json();
+      if (data.rank) setUserRank(data.rank);
+      else setUserRank(null);
+    } catch (err) {
+      console.error('Rank fetch error:', err);
+    }
+  };
   const saveResult = async () => {
     if (saved) return;
     try {
@@ -237,6 +247,7 @@ export default function Home() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone })
         });
+        await fetchUserRank(ventName);
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
@@ -555,6 +566,11 @@ export default function Home() {
                     </div>
 
                   ))}
+                  {userRank && (
+                    <div className="mt-4 pt-2 border-t border-white/10 text-center">
+                      🏆 <span className="text-[#FFD966] font-bold">Your Rank: #{userRank}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
