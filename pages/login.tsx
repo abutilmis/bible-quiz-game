@@ -25,6 +25,13 @@ export default function Login() {
     localStorage.setItem('phone', phone.trim());
     localStorage.setItem('telegramUsername', telegramUsername.trim());
     const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      const user = tg.initDataUnsafe?.user;
+      if (user?.id) {
+        localStorage.setItem('telegramId', user.id.toString());
+      }
+    }
     const userId = tg?.initDataUnsafe?.user?.id.toString();
     if (userId) localStorage.setItem('telegramId', userId);
     router.push('/');
