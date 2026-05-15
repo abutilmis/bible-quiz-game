@@ -9,6 +9,7 @@ export interface UserResult {
   id: string;
   name: string;
   phone: string;
+  userId: string;
   score: number;
   totalQuestions: number;
   percentage: number;

@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-declare const Telegram: any;
 
 export default function Login() {
   const router = useRouter(); 
@@ -9,6 +8,14 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [telegramUsername, setTelegramUsername] = useState('');
+
+  // Ensure deviceId is generated on first load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
+      const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('deviceId', newId);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,16 +28,18 @@ export default function Login() {
       setError('Please enter a valid phone number');
       return;
     }
+
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
-    // Generate or retrieve a persistent device ID
+    localStorage.setItem('telegramUsername', telegramUsername.trim());
+
+    // Double check deviceId exists before proceeding
     let deviceId = localStorage.getItem('deviceId');
     if (!deviceId) {
       deviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', deviceId);
     }
-    localStorage.setItem('deviceId', deviceId);
-    localStorage.setItem('telegramUsername', telegramUsername.trim());
+
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
       tg.ready();
@@ -39,8 +48,7 @@ export default function Login() {
         localStorage.setItem('telegramId', user.id.toString());
       }
     }
-    const userId = tg?.initDataUnsafe?.user?.id.toString();
-    if (userId) localStorage.setItem('telegramId', userId);
+    
     router.push('/');
   };
 

@@ -38,12 +38,15 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+
+  // Generate deviceId on first visit
   useEffect(() => {
-    if (!localStorage.getItem('deviceId')) {
+    if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
       const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', newId);
     }
   }, []);
+
   const totalQuestions = questions.length;
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -51,6 +54,7 @@ export default function Home() {
     if (mins === 0) return `${secs}s`;
     return `${mins}m ${secs}s`;
   };
+
   const playBeep = () => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -66,33 +70,40 @@ export default function Home() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
     } catch (e) {}
   };  
+
   // On mount: check login and completion status (Redis lock)
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
     const deviceId = localStorage.getItem('deviceId');
+
     if (!storedName || !storedPhone || !deviceId) {
       router.push('/login');
       return;
     }
+
     setVentName(storedName);
     setPhone(storedPhone);
 
-    let url = '/api/check-completed?';
-    url += `userId=${encodeURIComponent(deviceId)}&`;
-    url += `phone=${encodeURIComponent(storedPhone)}`;
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
+    const checkCompletion = async () => {
+      try {
+        const res = await fetch(`/api/check-completed?userId=${encodeURIComponent(deviceId)}&phone=${encodeURIComponent(storedPhone)}`);
+        const data = await res.json();
         if (data.completed) {
           setIsBlocked(true);
           setGameState('finished');
         }
         setIsLoading(false);
-      })
-      .catch(err => { console.error('Completion check failed:', err); setIsLoading(false); });
+      } catch (err) {
+        console.error('Completion check failed:', err);
+        setIsLoading(false);
+      }
+    };
+
+    checkCompletion();
   }, [router]);
-    // Fetch competition status for start screen
+
+  // Fetch competition status for start screen
   useEffect(() => {
     fetch('/api/competition')
       .then(res => res.json())
@@ -180,6 +191,7 @@ export default function Home() {
     setSaved(false);
     setLeaderboard([]);
   };
+
   const fetchPublicLeaderboard = async () => {
     setLoadingLeaderboard(true);
     try {
@@ -212,6 +224,7 @@ export default function Home() {
       }
     }, 1500);
   };
+
   const fetchUserRank = async (playerName: string) => {
     try {
       const res = await fetch(`/api/user-rank?name=${encodeURIComponent(playerName)}`);
@@ -222,17 +235,20 @@ export default function Home() {
       console.error('Rank fetch error:', err);
     }
   };
+
   const saveResult = async () => {
     if (saved) return;
     try {
       const telegramUsername = localStorage.getItem('telegramUsername') || '';
       const telegramId = localStorage.getItem('telegramId') || '';
+      const deviceId = localStorage.getItem('deviceId') || '';
       const startTime = localStorage.getItem('quizStartTime');
       let duration = 0;
       if (startTime) {
         duration = Math.floor((Date.now() - parseInt(startTime)) / 1000);
         localStorage.removeItem('quizStartTime');
       }
+      
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -241,29 +257,23 @@ export default function Home() {
           phone,
           telegramUsername,
           telegramId,
+          userId: deviceId, // deviceId sent as userId for Redis locks
           score,
           totalQuestions,
           duration,
           answers: questions.map(q => q.correctAnswer)
         })
       });
+
       if (res.ok) {
         setSaved(true);
-        // Set completion flag in Redis
-        const storedTelegramId = localStorage.getItem('telegramId');
-        const deviceId = localStorage.getItem('deviceId');
-        const storedPhone = localStorage.getItem('phone');
-        await fetch('/api/set-completed', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: deviceId, phone: storedPhone })
-        });
         await fetchUserRank(ventName);
         const leaderboardRes = await fetch('/api/leaderboard');
         const data = await leaderboardRes.json();
         setLeaderboard(data);
       } else {
-        console.error('Failed to save score');
+        const errorData = await res.json();
+        console.error('Failed to save score:', errorData.error);
       }
     } catch (error) {
       console.error('Error saving score:', error);
