@@ -6,20 +6,25 @@ const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
-  const { name, phone, telegramUsername, userId, score, totalQuestions, duration, answers } = req.body;
   
+  // Extract and clean inputs
+  const { name, score, totalQuestions, duration, answers } = req.body;
+  const phone = req.body.phone?.toString().trim();
+  const userId = req.body.userId?.toString().trim();
+  const telegramUsername = req.body.telegramUsername?.toString().trim() || '';
+
   if (!name || !phone || score === undefined || !userId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    // Check if phone or device already took the quiz
+    // Check locks with clean strings (exists returns number of keys found)
     const [phoneLock, userLock] = await Promise.all([
       redis.exists(`completed:phone:${phone}`),
       redis.exists(`completed:user:${userId}`)
     ]);
 
-    if (phoneLock || userLock) {
+    if (phoneLock > 0 || userLock > 0) {
       return res.status(400).json({ error: 'This phone number or device has already taken the quiz.' });
     }
 
@@ -28,14 +33,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       id,
       name,
       phone,
-      telegramUsername: telegramUsername || '',
-      userId: userId || '',
+      userId,
       score,
       totalQuestions,
       percentage: Math.round((score / totalQuestions) * 100),
       duration: duration || 0,
       answers,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      telegramUsername
     };
 
     // Save result and set locks atomically using a pipeline

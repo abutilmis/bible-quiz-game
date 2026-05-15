@@ -9,10 +9,13 @@ export default function Login() {
   const [error, setError] = useState('');
   const [telegramUsername, setTelegramUsername] = useState('');
 
-  // Ensure deviceId is generated on first load
+  // Ensure deviceId is generated on first load with robust fallback
   useEffect(() => {
     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
-      const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const cryptoObj = window.crypto || (window as any).msCrypto;
+      const newId = (cryptoObj && cryptoObj.randomUUID) 
+        ? cryptoObj.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', newId);
     }
   }, []);
@@ -36,7 +39,10 @@ export default function Login() {
     // Double check deviceId exists before proceeding
     let deviceId = localStorage.getItem('deviceId');
     if (!deviceId) {
-      deviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const cryptoObj = window.crypto || (window as any).msCrypto;
+      deviceId = (cryptoObj && cryptoObj.randomUUID) 
+        ? cryptoObj.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', deviceId);
     }
 

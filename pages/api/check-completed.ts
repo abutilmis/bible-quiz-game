@@ -4,7 +4,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { userId, phone } = req.query;
+  // Handle both string and string[] from query params, then trim
+  const userId = (Array.isArray(req.query.userId) ? req.query.userId[0] : req.query.userId)?.toString().trim();
+  const phone = (Array.isArray(req.query.phone) ? req.query.phone[0] : req.query.phone)?.toString().trim();
   
   if (!userId && !phone) {
     return res.status(200).json({ completed: false });
@@ -12,11 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const [userLock, phoneLock] = await Promise.all([
-      userId ? redis.exists(`completed:user:${userId as string}`) : 0,
-      phone ? redis.exists(`completed:phone:${phone as string}`) : 0
+      userId ? redis.exists(`completed:user:${userId}`) : 0,
+      phone ? redis.exists(`completed:phone:${phone}`) : 0
     ]);
 
-    const completed = userLock === 1 || phoneLock === 1;
+    // Check if either lock exists (exists returns number of matches)
+    const completed = (Number(userLock) > 0) || (Number(phoneLock) > 0);
     res.status(200).json({ completed });
   } catch (error) {
     console.error('Check completed error:', error);

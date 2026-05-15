@@ -39,10 +39,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
 
-  // Generate deviceId on first visit
+  // Robust Device ID generation
   useEffect(() => {
     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
-      const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const cryptoObj = window.crypto || (window as any).msCrypto;
+      const newId = (cryptoObj && cryptoObj.randomUUID) 
+        ? cryptoObj.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', newId);
     }
   }, []);
@@ -87,7 +90,7 @@ export default function Home() {
 
     const checkCompletion = async () => {
       try {
-        const res = await fetch(`/api/check-completed?userId=${encodeURIComponent(deviceId)}&phone=${encodeURIComponent(storedPhone)}`);
+        const res = await fetch(`/api/check-completed?userId=${encodeURIComponent(deviceId.trim())}&phone=${encodeURIComponent(storedPhone.trim())}`);
         const data = await res.json();
         if (data.completed) {
           setIsBlocked(true);
@@ -237,7 +240,7 @@ export default function Home() {
   };
 
   const saveResult = async () => {
-    if (saved) return;
+    if (saved || isBlocked) return;
     try {
       const telegramUsername = localStorage.getItem('telegramUsername') || '';
       const telegramId = localStorage.getItem('telegramId') || '';
@@ -254,10 +257,10 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: ventName,
-          phone,
+          phone: phone.trim(),
           telegramUsername,
           telegramId,
-          userId: deviceId, // deviceId sent as userId for Redis locks
+          userId: deviceId.trim(), // deviceId sent as userId for Redis locks
           score,
           totalQuestions,
           duration,
@@ -274,6 +277,9 @@ export default function Home() {
       } else {
         const errorData = await res.json();
         console.error('Failed to save score:', errorData.error);
+        if (errorData.error?.toLowerCase().includes('already taken')) {
+          setIsBlocked(true);
+        }
       }
     } catch (error) {
       console.error('Error saving score:', error);
