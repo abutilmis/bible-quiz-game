@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
+declare const Telegram: any;
 
 export default function Login() {
-  const router = useRouter();
+  const router = useRouter(); 
   const [ventName, setVentName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -23,6 +24,9 @@ export default function Login() {
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
     localStorage.setItem('telegramUsername', telegramUsername.trim());
+    const tg = (window as any).Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id.toString();
+    if (userId) localStorage.setItem('telegramId', userId);
     router.push('/');
   };
 

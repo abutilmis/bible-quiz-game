@@ -64,6 +64,7 @@ export default function Home() {
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
+    const storedTelegramId = localStorage.getItem('telegramId');
     if (!storedName || !storedPhone) {
       router.push('/login');
       return;
@@ -71,20 +72,19 @@ export default function Home() {
     setVentName(storedName);
     setPhone(storedPhone);
 
-    // Verify completion flag from Redis – this is critical
-    fetch(`/api/check-completed?phone=${encodeURIComponent(storedPhone)}`)
+    let url = '/api/check-completed?';
+    if (storedTelegramId) url += `userId=${encodeURIComponent(storedTelegramId)}&`;
+    if (storedPhone) url += `phone=${encodeURIComponent(storedPhone)}`;
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         if (data.completed) {
           setIsBlocked(true);
-          setGameState('finished'); // show blocked screen
+          setGameState('finished');
         }
         setIsLoading(false);
       })
-      .catch(err => {
-        console.error('Completion check failed:', err);
-        setIsLoading(false);
-      });
+      .catch(err => { console.error('Completion check failed:', err); setIsLoading(false); });
   }, [router]);
     // Fetch competition status for start screen
   useEffect(() => {
@@ -220,6 +220,7 @@ export default function Home() {
     if (saved) return;
     try {
       const telegramUsername = localStorage.getItem('telegramUsername') || '';
+      const telegramId = localStorage.getItem('telegramId') || '';
       const startTime = localStorage.getItem('quizStartTime');
       let duration = 0;
       if (startTime) {
@@ -233,6 +234,7 @@ export default function Home() {
           name: ventName,
           phone,
           telegramUsername,
+          telegramId,
           score,
           totalQuestions,
           duration,
@@ -242,10 +244,12 @@ export default function Home() {
       if (res.ok) {
         setSaved(true);
         // Set completion flag in Redis
+        const storedPhone = localStorage.getItem('phone');
+        const storedTelegramId = localStorage.getItem('telegramId');
         await fetch('/api/set-completed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
+          body: JSON.stringify({ userId: storedTelegramId, phone: storedPhone })
         });
         await fetchUserRank(ventName);
         const leaderboardRes = await fetch('/api/leaderboard');
@@ -364,33 +368,33 @@ export default function Home() {
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
           <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
           {competitionLoading ? (
-            <div className="spinner mx-auto my-8"></div>
-          ) : (
-            <div className={`relative mb-8 p-6 rounded-2xl backdrop-blur-sm overflow-hidden ${!competitionActive ? 'bg-red-500/10' : 'bg-[#FFD966]/10'}`}>
-              {/* Pulsing background when time is low (less than 10 seconds) */}
-              {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
-                <div className="absolute inset-0 bg-red-500/20 animate-pulse" />
-              )}
+          <div className="spinner mx-auto my-8"></div>
+        ) : (
+          <div className={`relative mb-8 p-6 rounded-2xl backdrop-blur-sm overflow-hidden ${!competitionActive ? 'bg-red-500/10' : 'bg-[#FFD966]/10'}`}>
+            {/* Pulsing background when time is low (less than 10 seconds) */}
+            {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
+              <div className="absolute inset-0 bg-red-500/20 animate-pulse" />
+            )}
 
-              <div className="text-center relative z-10">
-                <p className="text-white/50 text-xs uppercase tracking-wider font-semibold mb-3">
-                  {!competitionActive 
-                    ? (timeRemaining?.includes('ended') ? 'COMPETITION CLOSED' : 'COUNTDOWN TO START')
-                    : 'TIME REMAINING'}
-                </p>
-                <div className="font-mono font-black text-4xl sm:text-6xl md:text-7xl tracking-tighter text-[#FFD966] drop-shadow-[0_0_15px_rgba(255,217,102,0.5)]">
-                  {(() => {
-                    // Extract the time part (digits, d, h, m, s) from timeRemaining
-                    const match = timeRemaining?.match(/[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?/);
-                    return match && match[0] ? match[0].trim() : (competitionActive ? 'ACTIVE' : 'INACTIVE');
-                  })()}
-                </div>
-                <p className="text-white/40 text-xs mt-3 font-mono">
-                  {timeRemaining}
-                </p>
+            <div className="text-center relative z-10">
+              <p className="text-white/50 text-xs uppercase tracking-wider font-semibold mb-3">
+                {!competitionActive 
+                  ? (timeRemaining?.includes('ended') ? 'COMPETITION CLOSED' : 'COUNTDOWN TO START')
+                  : 'TIME REMAINING'}
+              </p>
+              <div className="font-mono font-black text-4xl sm:text-6xl md:text-7xl tracking-tighter text-[#FFD966] drop-shadow-[0_0_15px_rgba(255,217,102,0.5)]">
+                {(() => {
+                  // Extract the time part (digits, d, h, m, s) from timeRemaining
+                  const match = timeRemaining?.match(/[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?/);
+                  return match && match[0] ? match[0].trim() : (competitionActive ? 'ACTIVE' : 'INACTIVE');
+                })()}
               </div>
+              <p className="text-white/40 text-xs mt-3 font-mono">
+                {timeRemaining}
+              </p>
             </div>
-          )}
+          </div>
+        )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

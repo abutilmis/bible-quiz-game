@@ -4,8 +4,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { phone } = req.query;
-  if (!phone) return res.status(400).json({ error: 'No phone' });
-  const completed = await redis.exists(`completed:${phone}`);
-  res.status(200).json({ completed: completed === 1 });
+  const { userId, phone } = req.query;
+  if (!userId && !phone) {
+    return res.status(400).json({ error: 'Missing userId or phone' });
+  }
+  let completed = false;
+  if (userId) {
+    completed = await redis.exists(`completed:user:${userId}`) === 1;
+  }
+  if (!completed && phone) {
+    completed = await redis.exists(`completed:phone:${phone}`) === 1;
+  }
+  res.status(200).json({ completed });
 }

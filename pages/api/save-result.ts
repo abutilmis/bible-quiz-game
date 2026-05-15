@@ -6,7 +6,7 @@ const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
-  const { name, phone, telegramUsername, score, totalQuestions, duration, answers } = req.body;
+  const { name, phone, telegramUsername, telegramId, score, totalQuestions, duration, answers } = req.body;
   if (!name || !phone || score === undefined) return res.status(400).json({ error: 'Missing fields' });
 
   // 1. Server‑side duplicate check (early rejection)
@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     name,
     phone,
     telegramUsername: telegramUsername || '',
+    telegramId: telegramId || '',
     score,
     totalQuestions,
     percentage: Math.round((score / totalQuestions) * 100),

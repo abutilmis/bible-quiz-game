@@ -16,4 +16,5 @@ export interface UserResult {
   timestamp: number;
   telegramUsername?: string;
   duration: number;
+  telegramId?: string;
 }
