@@ -5,16 +5,15 @@ import { useRouter } from 'next/router';
 import { Question } from '../types';
 
 const questions: Question[] = [
-  { id: 1, text: "በአንጾኪያ ስንጸልይ እና ስናመልክ መንፈስ ቅዱስ ለስራዬ ለዩልኝ ያለን ሰዎች ነን እኛ እነማን ነን? ", options: ["ጳውሎስ እና ጤሞቲዎስ", "ጳውሎስ እና ሲላስ", "ጤሞቲዎስ እና ቲቶ", "ጳውሎስ እና በርናባስ"], correctAnswer: 3 },
-  { id: 2, text: "ሊቀ ካህን ሆኜ ሳገለግል ሳላውቅ ስለ ኢየሱስ ሞት ትንቢት የተናገርኩ እኔ ማን ነኝ?", options: ["አናስ", "ቀያፋ", "መልከ ጼዴቅ", "ኤሊ"], correctAnswer: 1 },
-  { id: 3, text: "በመጽሐፍ ቅዱስ ውስጥ “ራጉኤል” ተብዬ የምጠራ እና  የሲፓራ (የሙሴ ሚስት) አባት ነኝ እኔ ማን ነኝ?", options: ["ሆባብ", "ዮቶር", "አምራም", "ቆሬ"], correctAnswer: 1 },
-  { id: 4, text: "የእስራኤል የመጀመሪያው ንጉሥ ነኝ እኔ ማን ነኝ?", options: ["ዳዊት", "ሳውል", "ሰለሞን", "ሮብዓም"], correctAnswer: 1 },
-  { id: 5, text: "እስራኤላዊ ባልሆንም ኢየሱስ በታላቅ እምነቴ ያመሰገነኝ አህዛብ ሴት ነኝ እኔ ማን ነኝ?", options: ["መግደላዊት ማርያም", "ሳምራዊቷ ሴት", "ከነዓናዊት  ሴት", "ሊዲያ"], correctAnswer: 2 },
-  { id: 6, text: "የራሴን ልጅ ለጣኦት የሚቃጠል መስዋዕት አድርጌ ያቀረብኩ የይሁዳ ንጉሥ ነኝ እኔ ማን ነኝ?", options: ["ምናሴ", "አካዝ", "ኢዮራም", "አሞን"], correctAnswer: 1 },
-  { id: 7, text: "ከንቱ ከንቱ፣ ሁሉ ከንቱ ነው” ስል የጻፍኩ ነኝ  እኔ ማን ነኝ?", options: ["ሰለሞን", "ዳዊት", "ዮሴፍ", "ኢዮብ"], correctAnswer: 0 },
-  { id: 8, text: "በመጽሐፍ ቅዱስ ውስጥ የመጀመሪያውን ግድያ የፈፀመኩ ሰው ነኝ እኔ ማን ነኝ?", options: ["ሙሴ", "አቤል", "አዳም", "ቃየን"], correctAnswer: 3 },
-  { id: 9, text: "የፈርዖንን ሕልም የተረጎምኩ ሰው ነኝ እኔ ማን ነኝ?", options: ["ዳንኤል", "ዮሴፍ", "ሙሴ", "ኤልያስ"], correctAnswer: 1 },
-  { id: 10, text: "በ ትንቢተ ሚልክያስ  ጌታ  ቃል ኪዳን ከእኔ ጋር እንዳደረገ የተፃፈልኝ ነኝ እኔ ማን ነኝ?", options: ["ሌዊ", "አብርሃም", "ሙሴ", "ያዕቆብ"], correctAnswer: 0 },
+  { id: 1, text: "የራዕይ መጽሀፍ የመጨረሻው ግብዣ ምን ነበር። ? ", options: ["ተመልከት እና ጸልይ", "ጳጌታ ኢየሱስ ሆይ ና", "መንፈሱና ሙሽራይቱ፡- ና ይላሉ", "መንግሥቱ ቀርባለችና ንስሐ ግቡ"], correctAnswer: 2 },
+  { id: 2, text: "የሎዶቅያ ቤተ ክርስቲያን የተነቀፉት  ለምን ነበር?", options: ["በሃሳባቸው ክፉዎች ነበሩ።", "ቀዝቃዛም ሆነ ሞቃት አልነበሩም", "ለማገልገል ፈቃደኛ አልነበሩም።", "ግድየለሾች እና የማይረዱ ነበሩ።"], correctAnswer: 1 },
+  { id: 3, text: "ዮሐንስ ያየው የመጀመሪያው እንስሳ ምን ይመስላል? ", options: ["ጥጃ", "አንበሳ", "ሰው", "ንስር"], correctAnswer: 1 },
+  { id: 4, text: "ኢየሱስ በራዕይ መጽሃፍ ውስጥ ስንት አብያተ ክርስቲያናትን ተናግሯል?", options: ["5", "12", "6", "7"], correctAnswer: 3 },
+  { id: 5, text: "ሐዋርያው ​​ዮሐንስ ራዕይ ያየው የት ሆኖ ነበር? ", options: ["ሮም", "ኤፌሶን", "እየሩሳሌም", "ፍጥሞ"], correctAnswer: 3 },
+  { id: 6, text: "በራዕይ 1 ላይ ኢየሱስ በቀኝ እጁ የያዘው ምንድን ነው?", options: ["ሰይፍ", "ሰባት ኮከቦች", "ብራና", "በግ"], correctAnswer: 1 },
+  { id: 7, text: "ኢየሱስ በኤፌሶን ቤተ ክርስቲያን የነቀፈው ለምን ነበር?", options: ["መናፍቃንን በመታገሳቸው", "በቤተ ክርስቲያን ኤልዛቤልን በመታገሳቸው", "የመጀመሪያ ፍቅራቸውን በመተዋቸው", "ወንጌልን በመተዋቸው"], correctAnswer: 2 },
+  { id: 8, text: "በሰባት ማኅተም የታተመውን ጥቅልል ​​ይዘረጋ ዘንድ የሚገባው ማን ነው?", options: ["24ቱ ሽማግሌዎች", "የይሁዳ አንበሳ", "አራቱ ሕያዋን ፍጥረታት", "መልአክ"], correctAnswer: 1 },
+  { id: 9, text: "ከእስራኤል ነገድ  የታተሙት  ሰዎች ስንት ናቸው?", options: ["12,000", "144,000", "7,000", "100,000"], correctAnswer: 1 },
 ];
 
 export default function Home() {
@@ -499,7 +498,7 @@ export default function Home() {
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30 shadow-2xl">
           <h2 className="text-2xl font-bold text-[#FFD966] mb-4">📖 Before You Begin</h2>
           <div className="text-white/80 space-y-3 text-left mb-6">
-            <p>✨ በዛሬው ውድድር <strong className="text-[#FFD966]">{10}የእኔ ማን ነኝ? ጥያቄዎች</strong> ይኖሩናል።</p>
+            <p>✨ በዛሬው ውድድር <strong className="text-[#FFD966]">{9}የዮሃንስ ራዕይ ጥያቄዎች</strong> ይኖሩናል።</p>
             <p>⏱️ ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</p>
             <p>🏆 የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</p>
             <p>🔒 ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</p>
