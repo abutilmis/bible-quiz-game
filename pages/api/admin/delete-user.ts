@@ -2,9 +2,7 @@ import { Redis } from '@upstash/redis';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const redis = Redis.fromEnv();
-
-// Use the same secret as in admin.tsx (change to your own)
-const ADMIN_SECRET = 'wOUR/4426/11'; // ← change to a strong secret
+const ADMIN_SECRET = 'wOUR/4426/11'; // your secret
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') return res.status(405).end();
@@ -40,10 +38,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Delete the score from hash and leaderboard
     await redis.hdel('results', keyToDelete);
     await redis.zrem('leaderboard', userEntry.name);
-    await redis.del(`completed:${userEntry.phone}`);
-    await redis.del(`completed:${userEntry.name}`);
+
+    // Delete phone lock (if exists)
+    if (userEntry.phone) {
+      await redis.del(`completed:phone:${userEntry.phone}`);
+    }
+    // Delete device‑ID lock (if exists)
+    if (userEntry.userId) {
+      await redis.del(`completed:user:${userEntry.userId}`);
+    }
 
     res.status(200).json({ success: true, message: `Deleted ${userEntry.name}` });
   } catch (error) {

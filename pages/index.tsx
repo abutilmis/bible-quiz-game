@@ -38,6 +38,12 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+  useEffect(() => {
+    if (!localStorage.getItem('deviceId')) {
+      const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('deviceId', newId);
+    }
+  }, []);
   const totalQuestions = questions.length;
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -64,8 +70,8 @@ export default function Home() {
   useEffect(() => {
     const storedName = localStorage.getItem('ventName');
     const storedPhone = localStorage.getItem('phone');
-    const storedTelegramId = localStorage.getItem('telegramId');
-    if (!storedName || !storedPhone) {
+    const deviceId = localStorage.getItem('deviceId');
+    if (!storedName || !storedPhone || !deviceId) {
       router.push('/login');
       return;
     }
@@ -73,8 +79,8 @@ export default function Home() {
     setPhone(storedPhone);
 
     let url = '/api/check-completed?';
-    if (storedTelegramId) url += `userId=${encodeURIComponent(storedTelegramId)}&`;
-    if (storedPhone) url += `phone=${encodeURIComponent(storedPhone)}`;
+    url += `userId=${encodeURIComponent(deviceId)}&`;
+    url += `phone=${encodeURIComponent(storedPhone)}`;
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -244,12 +250,13 @@ export default function Home() {
       if (res.ok) {
         setSaved(true);
         // Set completion flag in Redis
-        const storedPhone = localStorage.getItem('phone');
         const storedTelegramId = localStorage.getItem('telegramId');
+        const deviceId = localStorage.getItem('deviceId');
+        const storedPhone = localStorage.getItem('phone');
         await fetch('/api/set-completed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: storedTelegramId, phone: storedPhone })
+          body: JSON.stringify({ userId: deviceId, phone: storedPhone })
         });
         await fetchUserRank(ventName);
         const leaderboardRes = await fetch('/api/leaderboard');

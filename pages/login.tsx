@@ -23,6 +23,13 @@ export default function Login() {
     }
     localStorage.setItem('ventName', ventName.trim());
     localStorage.setItem('phone', phone.trim());
+    // Generate or retrieve a persistent device ID
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('deviceId', deviceId);
+    }
+    localStorage.setItem('deviceId', deviceId);
     localStorage.setItem('telegramUsername', telegramUsername.trim());
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
