@@ -5,12 +5,13 @@ const redis = Redis.fromEnv();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const keys = await redis.keys('*');
-    const leaderboard = await redis.zrange('leaderboard', 0, -1, { withScores: true });
-    const resultsHash = await redis.hgetall('results');
-    res.status(200).json({ keys, leaderboard, resultsHash });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    const keys = await redis.keys('completed:*');
+    const results = await redis.hgetall('results');
+    res.status(200).json({ 
+      activeLocks: keys,
+      totalResults: Object.keys(results || {}).length 
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 }

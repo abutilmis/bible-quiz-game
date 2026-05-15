@@ -7,27 +7,26 @@ const redis = Redis.fromEnv();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
   
-  // Extract and clean inputs
   const { name, score, totalQuestions, duration, answers } = req.body;
-  const phone = req.body.phone?.toString().trim();
-  const userId = req.body.userId?.toString().trim();
-  const telegramUsername = req.body.telegramUsername?.toString().trim() || '';
+  const phone = String(req.body.phone || '').trim();
+  const userId = String(req.body.userId || '').trim();
+  const telegramUsername = String(req.body.telegramUsername || '').trim();
 
-  if (!name || !phone || score === undefined || !userId) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!phone || !userId) {
+    return res.status(400).json({ error: 'Missing phone or device ID' });
   }
 
   try {
-    // Check locks with clean strings (exists returns number of keys found)
-    const [phoneLock, userLock] = await Promise.all([
-      redis.exists(`completed:phone:${phone}`),
-      redis.exists(`completed:user:${userId}`)
-    ]);
+    // 1. Check if locks exist (using a simple, direct check)
+    const pExist = await redis.exists(`completed:phone:${phone}`);
+    const uExist = await redis.exists(`completed:user:${userId}`);
 
-    if (phoneLock > 0 || userLock > 0) {
-      return res.status(400).json({ error: 'This phone number or device has already taken the quiz.' });
+    if (pExist > 0 || uExist > 0) {
+      console.log(`Blocked attempt: ${phone} / ${userId}`);
+      return res.status(400).json({ error: 'ALREADY_TAKEN' });
     }
 
+    // 2. Prepare result
     const id = Date.now().toString();
     const result: UserResult = {
       id,
@@ -43,18 +42,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       telegramUsername
     };
 
-    // Save result and set locks atomically using a pipeline
-    const pipeline = redis.pipeline();
-    pipeline.hset('results', { [id]: JSON.stringify(result) });
-    pipeline.zadd('leaderboard', { score, member: name });
-    pipeline.set(`completed:phone:${phone}`, 'true');
-    pipeline.set(`completed:user:${userId}`, 'true');
-    await pipeline.exec();
+    // 3. Save and LOCK atomically
+    const p = redis.pipeline();
+    p.hset('results', { [id]: JSON.stringify(result) });
+    p.zadd('leaderboard', { score, member: name });
+    p.set(`completed:phone:${phone}`, 'true');
+    p.set(`completed:user:${userId}`, 'true');
+    await p.exec();
 
     console.log(`Saved: ${name} scored ${score}/${totalQuestions}`);
     res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Redis save error:', error);
-    res.status(500).json({ error: 'Database error' });
+  } catch (error: any) {
+    console.error('Redis error:', error);
+    res.status(500).json({ error: error.message });
   }
 }
