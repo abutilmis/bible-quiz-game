@@ -130,7 +130,7 @@ export default function Admin() {
             <button
               onClick={async () => {
                 if (!confirm('⚠️ WARNING: This will delete ALL quiz results. This action cannot be undone. Are you sure?')) return;
-                const res = await fetch(`/api/admin/delete-all-winners?secret=${encodeURIComponent(ADMIN_SECRET)}`, { method: 'DELETE' });
+                const res = await fetch(`/api/admin/delete-all-winners?secret=wOUR/4426/11`, { method: 'DELETE' });
                 if (res.ok) {
                   alert('All results deleted');
                   fetchResults(); // refresh the table
