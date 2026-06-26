@@ -108,6 +108,17 @@ export default function Home() {
     return `${mins}m ${secs}s`;
   };
 
+  const countdownParts = (() => {
+    const match = timeRemaining?.match(/(\d+)d\s+(\d+)h\s+(\d+)m\s+(\d+)s/);
+    if (!match) return null;
+    return {
+      days: match[1],
+      hours: match[2],
+      minutes: match[3],
+      seconds: match[4],
+    };
+  })();
+
   const playBeep = () => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -447,26 +458,44 @@ export default function Home() {
           {competitionLoading ? (
           <div className="spinner mx-auto my-8"></div>
         ) : (
-          <div className={`relative mb-8 p-6 rounded-2xl backdrop-blur-sm overflow-hidden ${!competitionActive ? 'bg-red-500/10' : 'bg-[#FFD966]/10'}`}>
+          <div className={`relative mb-8 overflow-hidden rounded-[2rem] border border-[#FFD966]/30 bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#0b0b0b] p-5 shadow-[0_0_35px_rgba(255,217,102,0.14)] backdrop-blur-xl ${!competitionActive ? 'bg-red-500/10' : ''}`}>
             {/* Pulsing background when time is low (less than 10 seconds) */}
             {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
               <div className="absolute inset-0 bg-red-500/20 animate-pulse" />
             )}
 
-            <div className="text-center relative z-10">
-              <p className="text-white/50 text-xs uppercase tracking-wider font-semibold mb-3">
+            <div className="relative z-10 text-center">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-white/50">
                 {!competitionActive 
                   ? (timeRemaining?.includes('ended') ? 'COMPETITION CLOSED' : 'COUNTDOWN TO START')
                   : 'TIME REMAINING'}
               </p>
-              <div className="font-mono font-black text-4xl sm:text-6xl md:text-7xl tracking-tighter text-[#FFD966] drop-shadow-[0_0_15px_rgba(255,217,102,0.5)]">
-                {(() => {
-                  // Extract the time part (digits, d, h, m, s) from timeRemaining
-                  const match = timeRemaining?.match(/[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?[\d\s]*(?:[dhm])?/);
-                  return match && match[0] ? match[0].trim() : (competitionActive ? 'ACTIVE' : 'INACTIVE');
-                })()}
-              </div>
-              <p className="text-white/40 text-xs mt-3 font-mono">
+
+              {countdownParts ? (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                  {[
+                    { label: 'Days', value: countdownParts.days },
+                    { label: 'Hours', value: countdownParts.hours },
+                    { label: 'Minutes', value: countdownParts.minutes },
+                    { label: 'Seconds', value: countdownParts.seconds },
+                  ].map((unit) => (
+                    <div key={unit.label} className="rounded-2xl border border-[#FFD966]/25 bg-[#FFD966]/10 px-3 py-4 shadow-inner shadow-[#FFD966]/10 sm:px-4 sm:py-5">
+                      <div className="font-mono text-4xl font-black leading-none text-transparent bg-gradient-to-br from-[#fff6c8] via-[#FFD966] to-[#c89a00] bg-clip-text drop-shadow-[0_0_18px_rgba(255,217,102,0.35)] sm:text-5xl lg:text-6xl">
+                        {unit.value}
+                      </div>
+                      <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/55">
+                        {unit.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-[#FFD966]/20 bg-[#FFD966]/10 px-6 py-6 text-3xl font-black tracking-[0.2em] text-[#FFD966] shadow-inner shadow-[#FFD966]/10 sm:text-4xl">
+                  {competitionActive ? 'ACTIVE' : 'INACTIVE'}
+                </div>
+              )}
+
+              <p className="mt-4 text-xs font-mono text-white/40">
                 {timeRemaining}
               </p>
             </div>
