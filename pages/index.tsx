@@ -458,18 +458,22 @@ export default function Home() {
           {competitionLoading ? (
           <div className="spinner mx-auto my-8"></div>
         ) : (
-          <div className={`relative mb-8 overflow-hidden rounded-[2rem] border border-[#FFD966]/30 bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#0b0b0b] p-5 shadow-[0_0_35px_rgba(255,217,102,0.14)] backdrop-blur-xl ${!competitionActive ? 'bg-red-500/10' : ''}`}>
+          <div className={`relative mb-8 overflow-hidden rounded-[2.2rem] border border-[#FFD966]/40 bg-[radial-gradient(circle_at_top_left,_rgba(255,217,102,0.18),_transparent_40%),linear-gradient(135deg,_#191919_0%,_#0d0d0d_100%)] p-5 shadow-[0_0_45px_rgba(255,217,102,0.2)] backdrop-blur-2xl ${!competitionActive ? 'border-red-500/30 bg-red-500/10' : ''}`}>
             {/* Pulsing background when time is low (less than 10 seconds) */}
             {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
-              <div className="absolute inset-0 bg-red-500/20 animate-pulse" />
+              <div className="absolute inset-0 animate-pulse bg-red-500/20" />
             )}
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.06)_50%,transparent_100%)] opacity-70" />
+            <div className="absolute -top-14 right-8 h-28 w-28 rounded-full bg-[#FFD966]/20 blur-3xl" />
+            <div className="absolute bottom-0 left-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
 
             <div className="relative z-10 text-center">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-white/50">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFD966]/20 bg-[#FFD966]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] text-[#FFD966] shadow-[0_0_18px_rgba(255,217,102,0.15)]">
+                <span className="h-2 w-2 rounded-full bg-[#FFD966] animate-pulse" />
                 {!competitionActive 
-                  ? (timeRemaining?.includes('ended') ? 'COMPETITION CLOSED' : 'COUNTDOWN TO START')
-                  : 'TIME REMAINING'}
-              </p>
+                  ? (timeRemaining?.includes('ended') ? 'Competition Closed' : 'Countdown To Start')
+                  : 'Time Remaining'}
+              </div>
 
               {countdownParts ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -479,22 +483,21 @@ export default function Home() {
                     { label: 'Minutes', value: countdownParts.minutes },
                     { label: 'Seconds', value: countdownParts.seconds },
                   ].map((unit) => (
-                    <div key={unit.label} className="rounded-2xl border border-[#FFD966]/25 bg-[#FFD966]/10 px-3 py-4 shadow-inner shadow-[#FFD966]/10 sm:px-4 sm:py-5">
-                      <div className="font-mono text-4xl font-black leading-none text-transparent bg-gradient-to-br from-[#fff6c8] via-[#FFD966] to-[#c89a00] bg-clip-text drop-shadow-[0_0_18px_rgba(255,217,102,0.35)] sm:text-5xl lg:text-6xl">
+                    <div key={unit.label} className="rounded-[1.25rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:px-4 sm:py-5">
+                      <div className="font-mono text-5xl font-black leading-none tracking-[0.15em] text-transparent bg-gradient-to-br from-[#fff7d2] via-[#FFD966] to-[#b98200] bg-clip-text drop-shadow-[0_0_22px_rgba(255,217,102,0.35)] sm:text-6xl lg:text-7xl">
                         {unit.value}
                       </div>
-                      <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/55">
+                      <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/55">
                         {unit.label}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-[#FFD966]/20 bg-[#FFD966]/10 px-6 py-6 text-3xl font-black tracking-[0.2em] text-[#FFD966] shadow-inner shadow-[#FFD966]/10 sm:text-4xl">
+                <div className="rounded-[1.25rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-6 py-6 text-3xl font-black tracking-[0.2em] text-[#FFD966] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:text-4xl">
                   {competitionActive ? 'ACTIVE' : 'INACTIVE'}
                 </div>
               )}
-
             </div>
           </div>
         )}
