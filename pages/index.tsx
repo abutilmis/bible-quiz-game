@@ -495,9 +495,6 @@ export default function Home() {
                 </div>
               )}
 
-              <p className="mt-4 text-xs font-mono text-white/40">
-                {timeRemaining}
-              </p>
             </div>
           </div>
         )}
