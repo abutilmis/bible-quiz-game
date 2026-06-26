@@ -476,18 +476,18 @@ export default function Home() {
               </div>
 
               {countdownParts ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
                   {[
                     { label: 'Days', value: countdownParts.days },
                     { label: 'Hours', value: countdownParts.hours },
                     { label: 'Minutes', value: countdownParts.minutes },
                     { label: 'Seconds', value: countdownParts.seconds },
                   ].map((unit) => (
-                    <div key={unit.label} className="rounded-[1.25rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:px-4 sm:py-5">
-                      <div className="font-mono text-5xl font-black leading-none tracking-[0.15em] text-transparent bg-gradient-to-br from-[#fff7d2] via-[#FFD966] to-[#b98200] bg-clip-text drop-shadow-[0_0_22px_rgba(255,217,102,0.35)] sm:text-6xl lg:text-7xl">
+                    <div key={unit.label} className="min-w-[70px] flex-1 rounded-[1.05rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:min-w-[90px] sm:px-4 sm:py-5">
+                      <div className="font-mono text-3xl font-black leading-none tracking-[0.15em] text-transparent bg-gradient-to-br from-[#fff7d2] via-[#FFD966] to-[#b98200] bg-clip-text drop-shadow-[0_0_22px_rgba(255,217,102,0.35)] sm:text-5xl lg:text-6xl">
                         {unit.value}
                       </div>
-                      <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/55">
+                      <div className="mt-1 text-[8px] font-semibold uppercase tracking-[0.25em] text-white/55 sm:mt-2 sm:text-[10px]">
                         {unit.label}
                       </div>
                     </div>
