@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/router';
 import { Question } from '../types';
+import { 
+  LogOut, Trophy, BookOpen, Star, Clock, Lock, 
+  CheckCircle, ChevronLeft, ChevronRight, CheckCircle2, 
+  XCircle, Lightbulb, Copy, Send, Share2 
+} from 'lucide-react';
 
 const questions: Question[] = [
   {
@@ -24,7 +29,7 @@ const questions: Question[] = [
   {
     id: 3,
     book: "መዝሙረ ዳዊት",
-    question: "በመጽሐፈ መዝሙር ውስጥ ረጅሙ ምዕራፍ የትኛው ነው?",
+    question: "በዳዊት መዝሙር ውስጥ ረጅሙ ምዕራፍ የትኛው ነው?",
     options: ["መዝሙር 23", "መዝሙር 91", "መዝሙር 117", "መዝሙር 119"],
     correctIndex: 3,
     explanation: "መዝሙር 119 በ176 ቁጥሮች የተዋቀረ ሲሆን በመጽሐፍ ቅዱስ ውስጥ ረጅሙ ምዕራፍ ነው።"
@@ -51,7 +56,7 @@ const questions: Question[] = [
     question: "በጴንጠቆስጤ ቀን መንፈስ ቅዱስ በወረደ ጊዜ ሐዋርያው ጴጥሮስ በሰበከው ስብከት ስንት ሰዎች አመኑ?",
     options: ["500 ሰዎች", "1,000 ሰዎች", "3,000 ሰዎች", "5,000 ሰዎች"],
     correctIndex: 2,
-    explanation: "በየሐዋርያት ሥራ 2:41 መሠረት በዚያን ቀን ቃሉን ተቀብለው የተጠመቁ አራት ሺህ ያህል (3,000) ነፍሳት ተጨመሩ።"
+    explanation: "በየሐዋርያት ሥራ 2:41 መሠረት በዚያን ቀን ቃሉን ተቀብለው የተጠመቁ ሦስት ሺህ ያህል (3,000) ነፍሳት ተጨመሩ።"
   },
   {
     id: 7,
@@ -64,7 +69,7 @@ const questions: Question[] = [
   {
     id: 8,
     book: "ዕብራውያን",
-    question: "በመጽሐፈ ዕብራውያን ምዕራፍ 11 'የእምነት አባቶች' ተብለው ከተዘረዘሩት ውስጥ የመጀመሪያው ማን ነው?",
+    question: "በዕብራውያን መጽሃፍ ምዕራፍ 11 'የእምነት አባቶች' ተብለው ከተዘረዘሩት ውስጥ የመጀመሪያው ማን ነው?",
     options: ["አብርሃም", "አቤል", "ሄኖክ", "ኖኅ"],
     correctIndex: 1,
     explanation: "ዕብራውያን 11:4 'አቤል ከቃየል ይልቅ የሚበልጥን መሥዋዕት ለእግዚአብሔር በእምነት አቀረበ' በማለት በአቤል ይጀምራል።"
@@ -72,7 +77,7 @@ const questions: Question[] = [
   {
     id: 9,
     book: "የዮሐንስ ራእይ",
-    question: "በዮሐንስ ራእይ ምዕራፍ 2 እና 3 ላይ መልእክት የተላከላቸው ስንት አብያተ ክርስቲያናት ነበሩ?",
+    question: "በዮሐንስ ራእይ ከተማዋ ውስጥ መልእክት የተላከላቸው ስንት አብያተ ክርስቲያናት ነበሩ?",
     options: ["3", "7", "12", "70"],
     correctIndex: 1,
     explanation: "በራእይ 1:11 እና ምዕራፍ 2-3 መሠረት በእስያ ላሉት ሰባት አብያተ ክርስቲያናት መልእክት ተላከ።"
@@ -113,8 +118,8 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
       const cryptoObj = window.crypto || (window as any).msCrypto;
-      const newId = (cryptoObj && cryptoObj.randomUUID) 
-        ? cryptoObj.randomUUID() 
+      const newId = (cryptoObj && cryptoObj.randomUUID)
+        ? cryptoObj.randomUUID()
         : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('deviceId', newId);
     }
@@ -152,8 +157,8 @@ export default function Home() {
       gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
       oscillator.stop(audioCtx.currentTime + 0.2);
       if (audioCtx.state === 'suspended') audioCtx.resume();
-    } catch (e) {}
-  };  
+    } catch (e) { }
+  };
 
   // On mount: check login and completion status (Redis lock)
   useEffect(() => {
@@ -322,7 +327,7 @@ export default function Home() {
         duration = Math.floor((Date.now() - parseInt(startTime)) / 1000);
         localStorage.removeItem('quizStartTime');
       }
-      
+
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -395,9 +400,9 @@ export default function Home() {
               localStorage.removeItem('quizStartTime');
               router.push('/login');
             }}
-            className="mt-6 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+            className="mt-6 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            🔄 Logout
+            <LogOut className="w-4 h-4" /> Logout
           </motion.button>
 
           {/* View Leaderboard button */}
@@ -405,9 +410,9 @@ export default function Home() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={fetchPublicLeaderboard}
-            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            🏆 View Leaderboard
+            <Trophy className="w-4 h-4" /> View Leaderboard
           </motion.button>
 
           {/* Leaderboard Modal */}
@@ -415,7 +420,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
               <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-[#FFD966]">🏆 Leaderboard</h2>
+                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5"/> Leaderboard</h2>
                   <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
                 </div>
                 {loadingLeaderboard ? (
@@ -466,59 +471,59 @@ export default function Home() {
           <h1 className="text-5xl font-bold text-[#FFD966] mb-4 drop-shadow-lg">Bible Quiz</h1>
           <p className="text-white/80 mb-8 text-lg">Test your knowledge of the Bible</p>
           {competitionLoading ? (
-          <div className="spinner mx-auto my-8"></div>
-        ) : (
-          <div className={`relative mb-8 overflow-hidden rounded-[2.2rem] border border-[#FFD966]/40 bg-[radial-gradient(circle_at_top_left,_rgba(255,217,102,0.18),_transparent_40%),linear-gradient(135deg,_#191919_0%,_#0d0d0d_100%)] p-5 shadow-[0_0_45px_rgba(255,217,102,0.2)] backdrop-blur-2xl ${!competitionActive ? 'border-red-500/30 bg-red-500/10' : ''}`}>
-            {/* Pulsing background when time is low (less than 10 seconds) */}
-            {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
-              <div className="absolute inset-0 animate-pulse bg-red-500/20" />
-            )}
-            <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.06)_50%,transparent_100%)] opacity-70" />
-            <div className="absolute -top-14 right-8 h-28 w-28 rounded-full bg-[#FFD966]/20 blur-3xl" />
-            <div className="absolute bottom-0 left-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
-
-            <div className="relative z-10 text-center">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFD966]/20 bg-[#FFD966]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] text-[#FFD966] shadow-[0_0_18px_rgba(255,217,102,0.15)]">
-                <span className="h-2 w-2 rounded-full bg-[#FFD966] animate-pulse" />
-                {!competitionActive 
-                  ? (timeRemaining?.includes('ended') ? 'Competition Closed' : 'Countdown To Start')
-                  : 'Time Remaining'}
-              </div>
-
-              {countdownParts ? (
-                <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
-                  {[
-                    { label: 'Days', value: countdownParts.days },
-                    { label: 'Hours', value: countdownParts.hours },
-                    { label: 'Minutes', value: countdownParts.minutes },
-                    { label: 'Seconds', value: countdownParts.seconds },
-                  ].map((unit) => (
-                    <div key={unit.label} className="min-w-[70px] flex-1 rounded-[1.05rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:min-w-[90px] sm:px-4 sm:py-5">
-                      <div className="font-mono text-3xl font-black leading-none tracking-[0.15em] text-transparent bg-gradient-to-br from-[#fff7d2] via-[#FFD966] to-[#b98200] bg-clip-text drop-shadow-[0_0_22px_rgba(255,217,102,0.35)] sm:text-5xl lg:text-6xl">
-                        {unit.value}
-                      </div>
-                      <div className="mt-1 text-[8px] font-semibold uppercase tracking-[0.25em] text-white/55 sm:mt-2 sm:text-[10px]">
-                        {unit.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[1.25rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-6 py-6 text-3xl font-black tracking-[0.2em] text-[#FFD966] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:text-4xl">
-                  {competitionActive ? 'ACTIVE' : 'INACTIVE'}
-                </div>
+            <div className="spinner mx-auto my-8"></div>
+          ) : (
+            <div className={`relative mb-8 overflow-hidden rounded-[2.2rem] border border-[#FFD966]/40 bg-[radial-gradient(circle_at_top_left,_rgba(255,217,102,0.18),_transparent_40%),linear-gradient(135deg,_#191919_0%,_#0d0d0d_100%)] p-5 shadow-[0_0_45px_rgba(255,217,102,0.2)] backdrop-blur-2xl ${!competitionActive ? 'border-red-500/30 bg-red-500/10' : ''}`}>
+              {/* Pulsing background when time is low (less than 10 seconds) */}
+              {competitionActive && timeRemaining && parseInt(timeRemaining.match(/\d+/)?.[0] || '999') < 10 && (
+                <div className="absolute inset-0 animate-pulse bg-red-500/20" />
               )}
+              <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.06)_50%,transparent_100%)] opacity-70" />
+              <div className="absolute -top-14 right-8 h-28 w-28 rounded-full bg-[#FFD966]/20 blur-3xl" />
+              <div className="absolute bottom-0 left-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
+
+              <div className="relative z-10 text-center">
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFD966]/20 bg-[#FFD966]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] text-[#FFD966] shadow-[0_0_18px_rgba(255,217,102,0.15)]">
+                  <span className="h-2 w-2 rounded-full bg-[#FFD966] animate-pulse" />
+                  {!competitionActive
+                    ? (timeRemaining?.includes('ended') ? 'Competition Closed' : 'Countdown To Start')
+                    : 'Time Remaining'}
+                </div>
+
+                {countdownParts ? (
+                  <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+                    {[
+                      { label: 'Days', value: countdownParts.days },
+                      { label: 'Hours', value: countdownParts.hours },
+                      { label: 'Minutes', value: countdownParts.minutes },
+                      { label: 'Seconds', value: countdownParts.seconds },
+                    ].map((unit) => (
+                      <div key={unit.label} className="min-w-[70px] flex-1 rounded-[1.05rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:min-w-[90px] sm:px-4 sm:py-5">
+                        <div className="font-mono text-3xl font-black leading-none tracking-[0.15em] text-transparent bg-gradient-to-br from-[#fff7d2] via-[#FFD966] to-[#b98200] bg-clip-text drop-shadow-[0_0_22px_rgba(255,217,102,0.35)] sm:text-5xl lg:text-6xl">
+                          {unit.value}
+                        </div>
+                        <div className="mt-1 text-[8px] font-semibold uppercase tracking-[0.25em] text-white/55 sm:mt-2 sm:text-[10px]">
+                          {unit.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-[1.25rem] border border-[#FFD966]/20 bg-[#0e0e0e]/80 px-6 py-6 text-3xl font-black tracking-[0.2em] text-[#FFD966] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:text-4xl">
+                    {competitionActive ? 'ACTIVE' : 'INACTIVE'}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setGameState('description')}
             disabled={!competitionActive}
-            className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
           >
-            Start Quiz
+            <BookOpen className="w-6 h-6"/> Start Quiz
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -531,23 +536,24 @@ export default function Home() {
               localStorage.removeItem('quizStartTime');
               router.push('/login');
             }}
-            className="mt-4 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+            className="mt-4 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            🔄 Logout
+            <LogOut className="w-4 h-4"/> Logout
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={fetchPublicLeaderboard}
-            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300"
+            className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            🏆 View Leaderboard
+            <Trophy className="w-4 h-4"/> View Leaderboard
           </motion.button>
+          {/* Leaderboard Modal */}
           {showLeaderboardModal && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
               <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-[#FFD966]">🏆 Leaderboard</h2>
+                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5"/> Leaderboard</h2>
                   <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
                 </div>
                 {loadingLeaderboard ? (
@@ -559,7 +565,7 @@ export default function Home() {
                     {publicLeaderboard.map((user, idx) => (
                       <div key={idx} className="flex justify-between items-center py-2 border-b border-white/10">
                         <div className="flex items-center gap-2">
-                          <span className="text-[#FFD966] font-mono w-6">{idx+1}</span>
+                          <span className="text-[#FFD966] font-mono w-6">{idx + 1}</span>
                           <span className="text-white/90">{user.name}</span>
                         </div>
                         <div className="flex gap-4 text-right">
@@ -586,12 +592,14 @@ export default function Home() {
         className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4"
       >
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30 shadow-2xl">
-          <h2 className="text-2xl font-bold text-[#FFD966] mb-4">📖 Before You Begin</h2>
+          <h2 className="text-2xl font-bold text-[#FFD966] mb-4 flex items-center justify-center gap-2">
+            <BookOpen className="w-6 h-6"/> Before You Begin
+          </h2>
           <div className="text-white/80 space-y-3 text-left mb-6">
-            <p>✨ በዛሬው ውድድር <strong className="text-[#FFD966]">{10} ዳዊትን የተመለከቱ የመጽሃፍ ቅዱስ ጥያቄዎች</strong> ይኖሩናል።</p>
-            <p>⏱️ ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</p>
-            <p>🏆 የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</p>
-            <p>🔒 ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</p>
+            <p className="flex items-start gap-2"><Star className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>በዛሬው ውድድር <strong className="text-[#FFD966]">{10} የመጽሃፍ ቅዱስ ጥያቄዎች</strong> ይኖሩናል።</span></p>
+            <p className="flex items-start gap-2"><Clock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</span></p>
+            <p className="flex items-start gap-2"><Trophy className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</span></p>
+            <p className="flex items-start gap-2"><Lock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</span></p>
           </div>
           <div className="flex flex-col gap-3">
             <motion.button
@@ -600,17 +608,17 @@ export default function Home() {
               onClick={() => {
                 startGame(); // this now sets gameState to 'playing'
               }}
-              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold"
+              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2"
             >
-              ✅ Agree & Start
+              <CheckCircle className="w-5 h-5"/> Agree & Start
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setGameState('start')}
-              className="bg-transparent border border-white/30 text-white/70 px-6 py-2 rounded-full text-sm"
+              className="bg-transparent border border-white/30 text-white/70 px-6 py-2 rounded-full text-sm flex items-center justify-center gap-2"
             >
-              ← Back
+              <ChevronLeft className="w-4 h-4"/> Back
             </motion.button>
           </div>
         </div>
@@ -624,8 +632,10 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-[#090909] to-[#151515] flex items-center justify-center p-4 overflow-hidden">
         <div className="w-full max-w-2xl">
           <div className="flex justify-between items-center text-white/80 mb-2">
-            <span className={timeLeft <= 5 ? 'text-red-500 font-bold animate-pulse' : ''}>⏱️ {timeLeft}s</span>
-            <span>📋 {currentIndex+1}/{totalQuestions}</span>
+            <span className={`flex items-center gap-1 ${timeLeft <= 5 ? 'text-red-500 font-bold animate-pulse' : ''}`}>
+              <Clock className="w-4 h-4"/> {timeLeft}s
+            </span>
+            <span className="flex items-center gap-1"><Copy className="w-4 h-4"/> {currentIndex + 1}/{totalQuestions}</span>
           </div>
           <motion.div
             key={currentIndex}
@@ -644,33 +654,32 @@ export default function Home() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedOption(idx)}
-                  className={`w-full text-left p-4 rounded-xl border transition ${
-                    feedback !== null
+                  className={`w-full text-left p-4 rounded-xl border transition ${feedback !== null
                       ? idx === q.correctIndex
                         ? 'bg-green-500/30 border-green-500 text-white font-bold'
                         : selectedOption === idx
-                        ? 'bg-red-500/30 border-red-500 text-white font-bold'
-                        : 'bg-black/30 border-transparent text-white'
+                          ? 'bg-red-500/30 border-red-500 text-white font-bold'
+                          : 'bg-black/30 border-transparent text-white'
                       : selectedOption === idx
-                      ? 'bg-[#FFD966] border-[#FFD966] text-[#1e3c2c] font-bold'
-                      : 'bg-black/30 border-transparent text-white hover:bg-black/50'
-                  }`}
+                        ? 'bg-[#FFD966] border-[#FFD966] text-[#1e3c2c] font-bold'
+                        : 'bg-black/30 border-transparent text-white hover:bg-black/50'
+                    }`}
                   disabled={feedback !== null}
                 >
-                  {String.fromCharCode(65+idx)}. {opt}
+                  {String.fromCharCode(65 + idx)}. {opt}
                 </motion.button>
               ))}
             </div>
-            
+
             {!feedback && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAnswer}
                 disabled={selectedOption === null}
-                className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition"
+                className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
-                Submit
+                <CheckCircle className="w-5 h-5" /> Submit
               </motion.button>
             )}
           </motion.div>
@@ -683,27 +692,26 @@ export default function Home() {
                 className="mt-6"
               >
                 <div
-                  className={`text-center text-2xl font-bold mb-4 ${
-                    feedback === 'correct' ? 'text-green-400' : 'text-red-400'
-                  }`}
+                  className={`text-center text-2xl font-bold mb-4 flex items-center justify-center gap-2 ${feedback === 'correct' ? 'text-green-400' : 'text-red-400'
+                    }`}
                 >
-                  {feedback === 'correct' ? '🎉 Correct! 🎉' : '😢 Wrong!'}
+                  {feedback === 'correct' ? <><CheckCircle2 className="w-8 h-8"/> Correct!</> : <><XCircle className="w-8 h-8"/> Wrong!</>}
                 </div>
-                
+
                 <div className="bg-white/10 p-5 rounded-2xl border border-white/20 mb-6 shadow-lg backdrop-blur-md">
                   <h3 className="text-[#FFD966] font-bold mb-2 flex items-center gap-2">
-                    <span>💡</span> Explanation
+                    <Lightbulb className="w-5 h-5"/> Explanation
                   </h3>
                   <p className="text-white/90 leading-relaxed text-sm md:text-base">{q.explanation}</p>
                 </div>
-                
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={nextQuestion}
-                  className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold transition shadow-[0_0_15px_rgba(255,217,102,0.3)] hover:shadow-[0_0_25px_rgba(255,217,102,0.5)]"
+                  className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold transition shadow-[0_0_15px_rgba(255,217,102,0.3)] hover:shadow-[0_0_25px_rgba(255,217,102,0.5)] flex items-center justify-center gap-2"
                 >
-                  {currentIndex + 1 < totalQuestions ? 'Next Question' : 'View Results'}
+                  {currentIndex + 1 < totalQuestions ? <><ChevronRight className="w-5 h-5"/> Next Question</> : <><Trophy className="w-5 h-5"/> View Results</>}
                 </motion.button>
               </motion.div>
             )}
@@ -723,26 +731,26 @@ export default function Home() {
       <div className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 max-w-md w-full text-center border border-[#FFD966]/30">
         <h2 className="text-3xl font-bold text-[#FFD966] mb-2">Your Score</h2>
         <div className="text-6xl font-bold text-white my-4">{score} / {totalQuestions}</div>
-        <div className="text-white/70 mb-6">{Math.round(score/totalQuestions*100)}%</div>
+        <div className="text-white/70 mb-6">{Math.round(score / totalQuestions * 100)}%</div>
         {!saved ? (
           <div className="spinner mx-auto my-4 w-6 h-6 border-2 border-t-2"></div>
         ) : (
           <>
-            <p className="text-green-400 mb-4">✅ Your score has been recorded!</p>
+            <p className="text-green-400 mb-4 flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5"/> Your score has been recorded!</p>
             {leaderboard.length > 0 && (
               <div className="mt-6 text-left bg-black/20 rounded-xl p-4">
-                <h3 className="text-[#FFD966] font-bold text-xl mb-2 text-center">🏆 Top Players</h3>
+                <h3 className="text-[#FFD966] font-bold text-xl mb-2 text-center flex items-center justify-center gap-2"><Trophy className="w-5 h-5"/> Top Players</h3>
                 <div className="space-y-1">
                   {leaderboard.map((user, idx) => (
                     <div key={idx} className="text-white/80 flex justify-between text-sm md:text-base">
-                      <span>{idx+1}. {user.name}</span>
+                      <span>{idx + 1}. {user.name}</span>
                       <span>{user.score} pts</span>
                     </div>
 
                   ))}
                   {userRank && (
-                    <div className="mt-4 pt-2 border-t border-white/10 text-center">
-                      🏆 <span className="text-[#FFD966] font-bold">Your Rank: #{userRank}</span>
+                    <div className="mt-4 pt-2 border-t border-white/10 text-center flex items-center justify-center gap-2">
+                      <Trophy className="w-4 h-4 text-[#FFD966]"/> <span className="text-[#FFD966] font-bold">Your Rank: #{userRank}</span>
                     </div>
                   )}
                 </div>
@@ -753,11 +761,11 @@ export default function Home() {
       </div>
       {/* Share buttons – inside the card, below leaderboard */}
       <div className="mt-6 pt-4 border-t border-white/10">
-        <p className="text-white/50 text-xs text-center mb-3">📢 Share your result</p>
+        <p className="text-white/50 text-xs text-center mb-3 flex items-center justify-center gap-1"><Share2 className="w-3 h-3"/> Share your result</p>
         <div className="flex flex-row justify-center gap-3">
           <button
             onClick={() => {
-              const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
+              const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
               if (navigator.share) {
                 navigator.share({
                   title: 'My Bible Quiz Score',
@@ -772,19 +780,19 @@ export default function Home() {
                 alert('Score copied to clipboard!');
               }
             }}
-            className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-1"
+            className="px-4 py-2 rounded-full text-sm font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-2"
           >
-            📋 Copy Score
+            <Copy className="w-4 h-4"/> Copy Score
           </button>
           <button
             onClick={() => {
-              const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%) on the Bible Quiz!`;
+              const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!`;
               const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
               window.open(url, '_blank');
             }}
-            className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-1"
+            className="px-4 py-2 rounded-full text-sm font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-2"
           >
-            📢 Share on Telegram
+            <Send className="w-4 h-4"/> Share on Telegram
           </button>
         </div>
       </div>
