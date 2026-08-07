@@ -1,8 +1,10 @@
 export interface Question {
   id: number;
-  text: string;
+  book: string;
+  question: string;
   options: string[];
-  correctAnswer: number;
+  correctIndex: number;
+  explanation: string;
 }
 
 export interface UserResult {

@@ -5,72 +5,87 @@ import { useRouter } from 'next/router';
 import { Question } from '../types';
 
 const questions: Question[] = [
-  // የዳዊት ወጣትነትና መመረጥ (Early Life & Anointing)
   {
     id: 1,
-    text: "ዳዊት ለእግዚአብሔር ቤተ መቅደስ ለመሥራት ቢመኝም፥ እግዚአብሔር ግን “ብዙ ደም አፍስሰሃል” ብሎ መቅደሱን እንዲሠራ የፈቀደለት ለማን ነበር?",
-    options: ["ለኢዮአብ", "ለሰሎሞን", "ለናታን", "ለሕዝቅያስ"],
-    correctAnswer: 1
+    book: "ዘፍጥረት",
+    question: "እግዚአብሔር በሦስተኛው ቀን የፈጠረው ነገር ምንድን ነው?",
+    options: ["ብርሃን", "ሰማይና ውኃ", "የየብስ ምድር፣ ባሕርና ዕፅዋት", "ፀሐይ፣ ጨረቃና ኮከቦች"],
+    correctIndex: 2,
+    explanation: "በዘፍጥረት 1:9-13 መሠረት እግዚአብሔር በሦስተኛው ቀን የየብስ ምድርን ከውኃ ለይቶ ዕፅዋትንና ዛፎችን አበቀለ።"
   },
   {
     id: 2,
-    text: "የዳዊት የሠራዊት አለቃ ሆኖ ያገለገለውና በኋላ አቤሴሎምን የገደለው ሰው ማን ይባላል?",
-    options: ["ኢዮአብ", "አቤኔር", "በናያስ", "አቢሳ"],
-    correctAnswer: 0
+    book: "1 ነገሥት",
+    question: "ንጉሥ ሰሎሞን ቤተ መቅደሱን ለመሥራት ያዘዘው እንጨት ከየትኛው ሀገር መጣ?",
+    options: ["ከግብፅ", "ከሊባኖስ", "ከባቢሎን", "ከፋርስ"],
+    correctIndex: 1,
+    explanation: "በ1 ነገሥት 5:6 መሠረት ሰሎሞን ከሊባኖስ የዝግባ እንጨት እንዲቆረጥለት ከጢሮስ ንጉሥ ከኪራም ጋር ተስማማ።"
   },
   {
     id: 3,
-    text: "ዳዊት በሠራው በደል ምክንያት መጥቶ “ያ ሰው አንተ ነህ” ብሎ በምሳሌ የገሠጸው ነቢይ ማን ነው?",
-    options: ["ነቢዩ ሳሙኤል", "ነቢዩ ጋድ", "ነቢዩ ናታን", "ነቢዩ አኪያ"],
-    correctAnswer: 2
+    book: "መዝሙረ ዳዊት",
+    question: "በመጽሐፈ መዝሙር ውስጥ ረጅሙ ምዕራፍ የትኛው ነው?",
+    options: ["መዝሙር 23", "መዝሙር 91", "መዝሙር 117", "መዝሙር 119"],
+    correctIndex: 3,
+    explanation: "መዝሙር 119 በ176 ቁጥሮች የተዋቀረ ሲሆን በመጽሐፍ ቅዱስ ውስጥ ረጅሙ ምዕራፍ ነው።"
   },
   {
     id: 4,
-    text: "ዳዊት ያመነዘረባትና በኋላም የሰሎሞን እናት የሆነችው ማን ትባላለች?",
-    options: ["አቢግያ", "አግህላ", "አሂኖዓም", "ቤርሳቤህ"],
-    correctAnswer: 3
+    book: "ኢያሱ",
+    question: "የኢያሪኮ ቅጥር እስራኤላውያን ከተማዋን ለስንት ቀናት በዞሩ በኋላ ነው የወደቀው?",
+    options: ["3 ቀናት", "7 ቀናት", "12 ቀናት", "40 ቀናት"],
+    correctIndex: 1,
+    explanation: "በኢያሱ 6:3-5 መሠረት ለ6 ቀናት በቀን አንድ ጊዜ፣ በ7ኛው ቀን ደግሞ 7 ጊዜ ከዞሩ በኋላ ቅጥሩ ወደቀ።"
   },
-
-  // ከጎልያድ ጋር የተደረገው ውጊያ (David & Goliath)
   {
     id: 5,
-    text: "ዳዊት ኢየሩሳሌምን ይዘው የነበሩትን የትኞቹን ሕዝቦች ድል አድርጎ ነው ከተማዋን የያዛት?",
-    options: ["ኢያቡሳውያንን", "ከነዓናውያንን", "አሞራውያንን", "ኬጢያውያንን"],
-    correctAnswer: 0
+    book: "ማቴዎስ",
+    question: "ኢየሱስ ክርስቶስ በተራራው ስብከቱ ላይ የተናገራቸው መመሪያዎች በየትኞቹ ምዕራፎች ይገኛሉ?",
+    options: ["ምዕራፍ 1-3", "ምዕራፍ 5-7", "ምዕራፍ 10-12", "ምዕራፍ 24-25"],
+    correctIndex: 1,
+    explanation: "የማቴዎስ ወንጌል ምዕራፍ 5 እስከ 7 ያለው ክፍል 'የተራራው ስብከት' (Sermon on the Mount) በመባል ይታወቃል።"
   },
   {
     id: 6,
-    text: "ዳዊት የእግዚአብሔርን ታቦት ወደ ኢየሩሳሌም ሲያመጣ በደስታ በፊቱ በመዘለሉና በመጨፈሩ ምክንያት የነቀፈችው  ሚስቱ ማን ናት?",
-    options: ["ሜልኮል", "አቢግያ", "ቤርሳቤህ", "መዓካ"],
-    correctAnswer: 0
+    book: "የሐዋርያት ሥራ",
+    question: "በጴንጠቆስጤ ቀን መንፈስ ቅዱስ በወረደ ጊዜ ሐዋርያው ጴጥሮስ በሰበከው ስብከት ስንት ሰዎች አመኑ?",
+    options: ["500 ሰዎች", "1,000 ሰዎች", "3,000 ሰዎች", "5,000 ሰዎች"],
+    correctIndex: 2,
+    explanation: "በየሐዋርያት ሥራ 2:41 መሠረት በዚያን ቀን ቃሉን ተቀብለው የተጠመቁ አራት ሺህ ያህል (3,000) ነፍሳት ተጨመሩ።"
   },
-
-  // ከዮናታን ጋር የነበረው ወዳጅነትና የሳኦል ስደት (Friendship & Exile)
   {
     id: 7,
-    text: "ንጉሥ ዳዊት በጠቅላላው  ለስንት ዓመታት ነገሠ?",
-    options: ["ሰላሳ ዓመት", "አርባ ዓመት", "አርባ አምስት ዓመት", "ኃምሳ ዓመት"],
-    correctAnswer: 1
+    book: "ገላትያ",
+    question: "በገላትያ 5:22-23 ከተዘረዘሩት የመንፈስ ፍሬዎች መካከል የመጀመሪያው የተጠቀሰው የትኛው ነው?",
+    options: ["ደስታ", "ሰላም", "ፍቅር", "ትዕግሥት"],
+    correctIndex: 2,
+    explanation: "ገላትያ 5:22 'የመንፈስ ፍሬ ግን ፍቅር፥ ደስታ፥ ሰላም፥ ትዕግሥት...' በማለት በፍቅር ይጀምራል።"
   },
   {
     id: 8,
-    text: "ዳዊት ከሳኦል ፍርሃት የተነሣ ወደ ፍልስጥኤም ምድር ሸሽቶ በሄደ ጊዜ፥ የጌት ንጉሥ አንኪስ የሰጠው ከተማ ማን ትባላለች?",
-    options: ["ጺቅላግ", "አሽዶድ", "ኤቅሮን", "ኢያሪኮ"],
-    correctAnswer: 0
+    book: "ዕብራውያን",
+    question: "በመጽሐፈ ዕብራውያን ምዕራፍ 11 'የእምነት አባቶች' ተብለው ከተዘረዘሩት ውስጥ የመጀመሪያው ማን ነው?",
+    options: ["አብርሃም", "አቤል", "ሄኖክ", "ኖኅ"],
+    correctIndex: 1,
+    explanation: "ዕብራውያን 11:4 'አቤል ከቃየል ይልቅ የሚበልጥን መሥዋዕት ለእግዚአብሔር በእምነት አቀረበ' በማለት በአቤል ይጀምራል።"
   },
   {
     id: 9,
-    text: "ዳዊት በሸመገለ ጊዜ የአባቱን ንግሥና ያለ አባቱ ፈቃድ ለመውሰድ ራሱን ከፍ ከፍ ያደረገው የዳዊት ልጅ ማን ነበር?",
-    options: ["አቤሴሎም", "ሰሎሞን", "አምኖን", "አዶንያስ"],
-    correctAnswer: 3
+    book: "የዮሐንስ ራእይ",
+    question: "በዮሐንስ ራእይ ምዕራፍ 2 እና 3 ላይ መልእክት የተላከላቸው ስንት አብያተ ክርስቲያናት ነበሩ?",
+    options: ["3", "7", "12", "70"],
+    correctIndex: 1,
+    explanation: "በራእይ 1:11 እና ምዕራፍ 2-3 መሠረት በእስያ ላሉት ሰባት አብያተ ክርስቲያናት መልእክት ተላከ።"
   },
   {
     id: 10,
-    text: "ዳዊትን መንገድ ላይ ድንጋይ እየወረወረና እየረገመ የተከተለው የሳኦል ቤተሰብ ወገን ማን ነበር?",
-    options: ["ሳሚ", "አብያታር", "አበሴ", "ብንያም"],
-    correctAnswer: 0
-  },
-  ];
+    book: "የዮሐንስ ራእይ",
+    question: "በዮሐንስ ራእይ መጨረሻ ላይ የተጠቀሰችው አዲሲቷ ከተማ ማን ትባላለች?",
+    options: ["አዲሲቷ ባቢሎን", "አዲሲቷ ኢየሩሳሌም", "አዲሲቷ ጽዮን", "አዲሲቷ ቃና"],
+    correctIndex: 1,
+    explanation: "በራእይ 21:2 'ቅድስቲቱም ከተማ አዲሲቱ ኢየሩሳሌም... ከሰማይ ስትወርድ አየሁ' ይላል።"
+  }
+];
 
 export default function Home() {
   const router = useRouter();
@@ -228,26 +243,25 @@ export default function Home() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          if (selectedOption === null) {
-            playBeep();   // sound when time runs out
-            setFeedback('wrong');
-            setTimeout(() => {
-              if (currentIndex + 1 < totalQuestions) {
-                setCurrentIndex(currentIndex + 1);
-                setSelectedOption(null);
-                setFeedback(null);
-              } else {
-                setGameState('finished');
-              }
-            }, 1500);
-          }
+          playBeep();   // sound when time runs out
+          setFeedback('wrong');
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState, currentIndex, feedback, selectedOption, totalQuestions, isBlocked]);
+  }, [gameState, currentIndex, feedback, isBlocked]);
+
+  const nextQuestion = () => {
+    if (currentIndex + 1 < totalQuestions) {
+      setCurrentIndex(currentIndex + 1);
+      setSelectedOption(null);
+      setFeedback(null);
+    } else {
+      setGameState('finished');
+    }
+  };
 
   const startGame = () => {
     localStorage.setItem('quizStartTime', Date.now().toString());
@@ -277,21 +291,12 @@ export default function Home() {
 
   const handleAnswer = () => {
     if (selectedOption === null || feedback !== null || isBlocked) return;
-    const isCorrect = selectedOption === questions[currentIndex].correctAnswer;
+    const isCorrect = selectedOption === questions[currentIndex].correctIndex;
     setFeedback(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) {
       setScore(score + 1);
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
-    setTimeout(() => {
-      setFeedback(null);
-      if (currentIndex + 1 < totalQuestions) {
-        setCurrentIndex(currentIndex + 1);
-        setSelectedOption(null);
-      } else {
-        setGameState('finished');
-      }
-    }, 1500);
   };
 
   const fetchUserRank = async (playerName: string) => {
@@ -330,7 +335,7 @@ export default function Home() {
           score,
           totalQuestions,
           duration,
-          answers: questions.map(q => q.correctAnswer)
+          answers: questions.map(q => q.correctIndex)
         })
       });
 
@@ -630,7 +635,8 @@ export default function Home() {
             transition={{ duration: 0.2 }}
             className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 border border-[#FFD966]/30 shadow-xl"
           >
-            <div className="text-white text-xl md:text-2xl font-semibold mb-6">{q.text}</div>
+            <div className="text-[#FFD966] text-sm font-bold mb-2 tracking-wider uppercase">{q.book}</div>
+            <div className="text-white text-xl md:text-2xl font-semibold mb-6">{q.question}</div>
             <div className="space-y-3">
               {q.options.map((opt, idx) => (
                 <motion.button
@@ -638,10 +644,16 @@ export default function Home() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedOption(idx)}
-                  className={`w-full text-left p-4 rounded-xl transition ${
-                    selectedOption === idx
-                      ? 'bg-[#FFD966] text-[#1e3c2c] font-bold'
-                      : 'bg-black/30 text-white hover:bg-black/50'
+                  className={`w-full text-left p-4 rounded-xl border transition ${
+                    feedback !== null
+                      ? idx === q.correctIndex
+                        ? 'bg-green-500/30 border-green-500 text-white font-bold'
+                        : selectedOption === idx
+                        ? 'bg-red-500/30 border-red-500 text-white font-bold'
+                        : 'bg-black/30 border-transparent text-white'
+                      : selectedOption === idx
+                      ? 'bg-[#FFD966] border-[#FFD966] text-[#1e3c2c] font-bold'
+                      : 'bg-black/30 border-transparent text-white hover:bg-black/50'
                   }`}
                   disabled={feedback !== null}
                 >
@@ -649,27 +661,50 @@ export default function Home() {
                 </motion.button>
               ))}
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleAnswer}
-              disabled={selectedOption === null || feedback !== null}
-              className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition"
-            >
-              Submit
-            </motion.button>
+            
+            {!feedback && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleAnswer}
+                disabled={selectedOption === null}
+                className="w-full mt-6 bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold disabled:opacity-50 transition"
+              >
+                Submit
+              </motion.button>
+            )}
           </motion.div>
           <AnimatePresence>
             {feedback && (
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className={`text-center mt-4 text-2xl font-bold ${
-                  feedback === 'correct' ? 'text-green-400' : 'text-red-400'
-                }`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="mt-6"
               >
-                {feedback === 'correct' ? '🎉 Correct! 🎉' : '😢 Wrong! Better luck next time.'}
+                <div
+                  className={`text-center text-2xl font-bold mb-4 ${
+                    feedback === 'correct' ? 'text-green-400' : 'text-red-400'
+                  }`}
+                >
+                  {feedback === 'correct' ? '🎉 Correct! 🎉' : '😢 Wrong!'}
+                </div>
+                
+                <div className="bg-white/10 p-5 rounded-2xl border border-white/20 mb-6 shadow-lg backdrop-blur-md">
+                  <h3 className="text-[#FFD966] font-bold mb-2 flex items-center gap-2">
+                    <span>💡</span> Explanation
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-sm md:text-base">{q.explanation}</p>
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={nextQuestion}
+                  className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold transition shadow-[0_0_15px_rgba(255,217,102,0.3)] hover:shadow-[0_0_25px_rgba(255,217,102,0.5)]"
+                >
+                  {currentIndex + 1 < totalQuestions ? 'Next Question' : 'View Results'}
+                </motion.button>
               </motion.div>
             )}
           </AnimatePresence>
