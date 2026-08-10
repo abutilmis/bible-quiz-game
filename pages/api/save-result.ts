@@ -18,14 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check locks with clean strings (exists returns number of keys found)
-    const [phoneLock, userLock] = await Promise.all([
-      redis.exists(`completed:phone:${phone}`),
-      redis.exists(`completed:user:${userId}`)
+    // Note: the `completed:*` locks are claimed the moment the quiz STARTS
+    // (see /api/start-attempt), so they'll already exist for the person
+    // legitimately submitting their own result — that's expected and is not
+    // a reason to reject. What we guard against here is a *duplicate
+    // submission* for the same attempt (double-click, retried request,
+    // direct API abuse, etc.), using its own atomic lock.
+    const [phoneSubmitted, userSubmitted] = await Promise.all([
+      redis.set(`submitted:phone:${phone}`, 'true', { nx: true }),
+      redis.set(`submitted:user:${userId}`, 'true', { nx: true }),
     ]);
 
-    if (phoneLock > 0 || userLock > 0) {
-      return res.status(400).json({ error: 'This phone number or device has already taken the quiz.' });
+    if (phoneSubmitted !== 'OK' || userSubmitted !== 'OK') {
+      return res.status(400).json({ error: 'This phone number or device has already submitted a result.' });
     }
 
     const id = Date.now().toString();
@@ -43,7 +48,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       telegramUsername
     };
 
-    // Save result and set locks atomically using a pipeline
+    // Save result and make sure the attempt locks are set too (they should
+    // already be, from start-attempt — this just guarantees consistency for
+    // any legacy/edge-case flow that reaches here without having called it).
     const pipeline = redis.pipeline();
     pipeline.hset('results', { [id]: JSON.stringify(result) });
     pipeline.zadd('leaderboard', { score, member: name });

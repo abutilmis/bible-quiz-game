@@ -1,0 +1,260 @@
+diff --git a/pages/api/admin/delete-all-winners.ts b/pages/api/admin/delete-all-winners.ts
+index 5098a21..b86e36f 100644
+--- a/pages/api/admin/delete-all-winners.ts
++++ b/pages/api/admin/delete-all-winners.ts
+@@ -14,8 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
+   try {
+     await redis.del('results');
+     await redis.del('leaderboard');
+-    const keys = await redis.keys('completed:*');
+-    if (keys.length) await redis.del(...keys);
++    const [completedKeys, submittedKeys] = await Promise.all([
++      redis.keys('completed:*'),
++      redis.keys('submitted:*'),
++    ]);
++    const allKeys = [...completedKeys, ...submittedKeys];
++    if (allKeys.length) await redis.del(...allKeys);
+     res.status(200).json({ success: true, message: 'All quiz data deleted' });
+   } catch (error) {
+     console.error(error);
+diff --git a/pages/api/admin/delete-user.ts b/pages/api/admin/delete-user.ts
+index feabf50..2397f01 100644
+--- a/pages/api/admin/delete-user.ts
++++ b/pages/api/admin/delete-user.ts
+@@ -34,8 +34,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
+       }
+     }
+ 
++    // No saved result — most likely someone who started the quiz (claiming
++    // their one-time attempt lock) but never finished it. There's no
++    // deviceId on file to clear precisely, so best-effort: clear the phone
++    // lock so they can retry from a fresh device/browser. If they're on the
++    // SAME device/browser, they'll also need to clear site data, since the
++    // device-level lock is keyed by a deviceId we don't have a record of.
+     if (!keyToDelete) {
+-      return res.status(404).json({ error: 'User not found' });
++      if (!phone) {
++        return res.status(404).json({ error: 'User not found (no saved result, and no phone provided to reset a device-only lock)' });
++      }
++      const pipeline = redis.pipeline();
++      pipeline.del(`completed:phone:${phone}`);
++      pipeline.del(`submitted:phone:${phone}`);
++      await pipeline.exec();
++      return res.status(200).json({
++        success: true,
++        message: `No finished result found for this user — cleared the phone-number lock only. If they're retrying on the same device, they must also clear site data / use a different device, since the device-level lock can't be identified without a saved result.`
++      });
+     }
+ 
+     // Delete score and locks atomically using a pipeline
+@@ -45,9 +61,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
+ 
+     if (userEntry.phone) {
+       pipeline.del(`completed:phone:${userEntry.phone}`);
++      pipeline.del(`submitted:phone:${userEntry.phone}`);
+     }
+     if (userEntry.userId) {
+       pipeline.del(`completed:user:${userEntry.userId}`);
++      pipeline.del(`submitted:user:${userEntry.userId}`);
+     }
+     await pipeline.exec();
+ 
+diff --git a/pages/api/save-result.ts b/pages/api/save-result.ts
+index e2a4c98..7d0182d 100644
+--- a/pages/api/save-result.ts
++++ b/pages/api/save-result.ts
+@@ -18,14 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
+   }
+ 
+   try {
+-    // Check locks with clean strings (exists returns number of keys found)
+-    const [phoneLock, userLock] = await Promise.all([
+-      redis.exists(`completed:phone:${phone}`),
+-      redis.exists(`completed:user:${userId}`)
++    // Note: the `completed:*` locks are claimed the moment the quiz STARTS
++    // (see /api/start-attempt), so they'll already exist for the person
++    // legitimately submitting their own result — that's expected and is not
++    // a reason to reject. What we guard against here is a *duplicate
++    // submission* for the same attempt (double-click, retried request,
++    // direct API abuse, etc.), using its own atomic lock.
++    const [phoneSubmitted, userSubmitted] = await Promise.all([
++      redis.set(`submitted:phone:${phone}`, 'true', { nx: true }),
++      redis.set(`submitted:user:${userId}`, 'true', { nx: true }),
+     ]);
+ 
+-    if (phoneLock > 0 || userLock > 0) {
+-      return res.status(400).json({ error: 'This phone number or device has already taken the quiz.' });
++    if (phoneSubmitted !== 'OK' || userSubmitted !== 'OK') {
++      return res.status(400).json({ error: 'This phone number or device has already submitted a result.' });
+     }
+ 
+     const id = Date.now().toString();
+@@ -43,7 +48,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
+       telegramUsername
+     };
+ 
+-    // Save result and set locks atomically using a pipeline
++    // Save result and make sure the attempt locks are set too (they should
++    // already be, from start-attempt — this just guarantees consistency for
++    // any legacy/edge-case flow that reaches here without having called it).
+     const pipeline = redis.pipeline();
+     pipeline.hset('results', { [id]: JSON.stringify(result) });
+     pipeline.zadd('leaderboard', { score, member: name });
+diff --git a/pages/api/start-attempt.ts b/pages/api/start-attempt.ts
+new file mode 100644
+index 0000000..18e113e
+--- /dev/null
++++ b/pages/api/start-attempt.ts
+@@ -0,0 +1,53 @@
++import { Redis } from '@upstash/redis';
++import type { NextApiRequest, NextApiResponse } from 'next';
++
++const redis = Redis.fromEnv();
++
++// Claims the one-time-attempt lock the instant the user presses "Agree &
++// Start" — BEFORE they see question 1. This is what makes the lock
++// abuse-proof: a page refresh (or leaving mid-quiz) can no longer grant a
++// fresh attempt, because the lock was already taken before any questions
++// were shown, not at submission time.
++//
++// Uses Redis SETNX (set-if-not-exists) so two near-simultaneous requests
++// (e.g. a double click, or two tabs) can't both win the lock.
++export default async function handler(req: NextApiRequest, res: NextApiResponse) {
++  if (req.method !== 'POST') return res.status(405).end();
++
++  const userId = req.body?.userId?.toString().trim();
++  const phone = req.body?.phone?.toString().trim();
++
++  if (!userId || !phone) {
++    return res.status(400).json({ error: 'Missing userId or phone' });
++  }
++
++  try {
++    const [userSet, phoneSet] = await Promise.all([
++      redis.set(`completed:user:${userId}`, 'true', { nx: true }),
++      redis.set(`completed:phone:${phone}`, 'true', { nx: true }),
++    ]);
++
++    const userAcquired = userSet === 'OK';
++    const phoneAcquired = phoneSet === 'OK';
++
++    if (!userAcquired || !phoneAcquired) {
++      // Someone already holds one (or both) of these locks — this device or
++      // phone number has already used its one attempt. Roll back whichever
++      // key we just newly claimed, since the attempt as a whole is rejected.
++      const rollback: Promise<unknown>[] = [];
++      if (userAcquired) rollback.push(redis.del(`completed:user:${userId}`));
++      if (phoneAcquired) rollback.push(redis.del(`completed:phone:${phone}`));
++      if (rollback.length) await Promise.all(rollback);
++
++      return res.status(409).json({
++        error: 'This phone number or device has already taken the quiz.',
++        alreadyTaken: true,
++      });
++    }
++
++    res.status(200).json({ success: true });
++  } catch (error) {
++    console.error('start-attempt error:', error);
++    res.status(500).json({ error: 'Database error' });
++  }
++}
+diff --git a/pages/index.tsx b/pages/index.tsx
+index 11aeafc..08faa32 100644
+--- a/pages/index.tsx
++++ b/pages/index.tsx
+@@ -113,6 +113,8 @@ export default function Home() {
+   const [timeLeft, setTimeLeft] = useState(30);
+   const [isLoading, setIsLoading] = useState(true);
+   const [isBlocked, setIsBlocked] = useState(false);
++  const [startingQuiz, setStartingQuiz] = useState(false);
++  const [startError, setStartError] = useState('');
+ 
+   // Robust Device ID generation
+   useEffect(() => {
+@@ -268,16 +270,41 @@ export default function Home() {
+     }
+   };
+ 
+-  const startGame = () => {
+-    localStorage.setItem('quizStartTime', Date.now().toString());
+-    if (isBlocked) return;
+-    setGameState('playing');
+-    setCurrentIndex(0);
+-    setScore(0);
+-    setSelectedOption(null);
+-    setFeedback(null);
+-    setSaved(false);
+-    setLeaderboard([]);
++  const startGame = async () => {
++    if (isBlocked || startingQuiz) return;
++    setStartingQuiz(true);
++    setStartError('');
++    try {
++      const deviceId = localStorage.getItem('deviceId') || '';
++      const res = await fetch('/api/start-attempt', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ userId: deviceId.trim(), phone: phone.trim() })
++      });
++
++      if (!res.ok) {
++        // This phone/device already has an attempt in progress or finished
++        // (started earlier and refreshed, or genuinely already played) —
++        // lock them out the same way a finished quiz would.
++        setIsBlocked(true);
++        setGameState('finished');
++        return;
++      }
++
++      localStorage.setItem('quizStartTime', Date.now().toString());
++      setGameState('playing');
++      setCurrentIndex(0);
++      setScore(0);
++      setSelectedOption(null);
++      setFeedback(null);
++      setSaved(false);
++      setLeaderboard([]);
++    } catch (err) {
++      console.error('Failed to start quiz attempt:', err);
++      setStartError('Could not start the quiz — check your connection and try again.');
++    } finally {
++      setStartingQuiz(false);
++    }
+   };
+ 
+   const fetchPublicLeaderboard = async () => {
+@@ -387,7 +414,7 @@ export default function Home() {
+       >
+         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
+           <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
+-          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
++          <p className="text-white/80">You&apos;ve already used your one attempt at this quiz — whether you finished it or not, refreshing or leaving mid-quiz still counts. Please contact the admin if you believe this is an error.</p>
+ 
+           <motion.button
+             whileHover={{ scale: 1.02 }}
+@@ -603,15 +630,19 @@ export default function Home() {
+           </div>
+           <div className="flex flex-col gap-3">
+             <motion.button
+-              whileHover={{ scale: 1.02 }}
+-              whileTap={{ scale: 0.98 }}
++              whileHover={{ scale: startingQuiz ? 1 : 1.02 }}
++              whileTap={{ scale: startingQuiz ? 1 : 0.98 }}
+               onClick={() => {
+-                startGame(); // this now sets gameState to 'playing'
++                startGame(); // claims the one-time attempt lock, then sets gameState to 'playing'
+               }}
+-              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2"
++              disabled={startingQuiz}
++              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+             >
+-              <CheckCircle className="w-5 h-5"/> Agree & Start
++              <CheckCircle className="w-5 h-5"/> {startingQuiz ? 'Starting...' : 'Agree & Start'}
+             </motion.button>
++            {startError && (
++              <p className="text-red-400 text-sm">{startError}</p>
++            )}
+             <motion.button
+               whileHover={{ scale: 1.02 }}
+               whileTap={{ scale: 0.98 }}

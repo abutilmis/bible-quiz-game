@@ -113,6 +113,8 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [startingQuiz, setStartingQuiz] = useState(false);
+  const [startError, setStartError] = useState('');
 
   // Robust Device ID generation
   useEffect(() => {
@@ -268,16 +270,41 @@ export default function Home() {
     }
   };
 
-  const startGame = () => {
-    localStorage.setItem('quizStartTime', Date.now().toString());
-    if (isBlocked) return;
-    setGameState('playing');
-    setCurrentIndex(0);
-    setScore(0);
-    setSelectedOption(null);
-    setFeedback(null);
-    setSaved(false);
-    setLeaderboard([]);
+  const startGame = async () => {
+    if (isBlocked || startingQuiz) return;
+    setStartingQuiz(true);
+    setStartError('');
+    try {
+      const deviceId = localStorage.getItem('deviceId') || '';
+      const res = await fetch('/api/start-attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: deviceId.trim(), phone: phone.trim() })
+      });
+
+      if (!res.ok) {
+        // This phone/device already has an attempt in progress or finished
+        // (started earlier and refreshed, or genuinely already played) —
+        // lock them out the same way a finished quiz would.
+        setIsBlocked(true);
+        setGameState('finished');
+        return;
+      }
+
+      localStorage.setItem('quizStartTime', Date.now().toString());
+      setGameState('playing');
+      setCurrentIndex(0);
+      setScore(0);
+      setSelectedOption(null);
+      setFeedback(null);
+      setSaved(false);
+      setLeaderboard([]);
+    } catch (err) {
+      console.error('Failed to start quiz attempt:', err);
+      setStartError('Could not start the quiz — check your connection and try again.');
+    } finally {
+      setStartingQuiz(false);
+    }
   };
 
   const fetchPublicLeaderboard = async () => {
@@ -387,7 +414,7 @@ export default function Home() {
       >
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md text-center border border-[#FFD966]/30">
           <h2 className="text-2xl text-[#FFD966] mb-4">Quiz Already Taken</h2>
-          <p className="text-white/80">You have already completed this quiz. Please contact the admin if you believe this is an error.</p>
+          <p className="text-white/80">You&apos;ve already used your one attempt at this quiz — whether you finished it or not, refreshing or leaving mid-quiz still counts. Please contact the admin if you believe this is an error.</p>
 
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -603,15 +630,19 @@ export default function Home() {
           </div>
           <div className="flex flex-col gap-3">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: startingQuiz ? 1 : 1.02 }}
+              whileTap={{ scale: startingQuiz ? 1 : 0.98 }}
               onClick={() => {
-                startGame(); // this now sets gameState to 'playing'
+                startGame(); // claims the one-time attempt lock, then sets gameState to 'playing'
               }}
-              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2"
+              disabled={startingQuiz}
+              className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <CheckCircle className="w-5 h-5"/> Agree & Start
+              <CheckCircle className="w-5 h-5"/> {startingQuiz ? 'Starting...' : 'Agree & Start'}
             </motion.button>
+            {startError && (
+              <p className="text-red-400 text-sm">{startError}</p>
+            )}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

@@ -14,8 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await redis.del('results');
     await redis.del('leaderboard');
-    const keys = await redis.keys('completed:*');
-    if (keys.length) await redis.del(...keys);
+    const [completedKeys, submittedKeys] = await Promise.all([
+      redis.keys('completed:*'),
+      redis.keys('submitted:*'),
+    ]);
+    const allKeys = [...completedKeys, ...submittedKeys];
+    if (allKeys.length) await redis.del(...allKeys);
     res.status(200).json({ success: true, message: 'All quiz data deleted' });
   } catch (error) {
     console.error(error);
