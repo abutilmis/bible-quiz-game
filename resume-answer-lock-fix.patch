@@ -1,0 +1,65 @@
+diff --git a/pages/index.tsx b/pages/index.tsx
+index e652023..a893e39 100644
+--- a/pages/index.tsx
++++ b/pages/index.tsx
+@@ -125,7 +125,13 @@ export default function Home() {
+ 
+   const QUESTION_SECONDS = 30;
+ 
+-  type QuizProgress = { currentIndex: number; score: number; deadline: number };
++  type QuizProgress = {
++    currentIndex: number;
++    score: number;
++    deadline: number;
++    selectedOption?: number | null;
++    feedback?: 'correct' | 'wrong' | null;
++  };
+ 
+   const saveProgress = (progress: QuizProgress) => {
+     try {
+@@ -228,12 +234,19 @@ export default function Home() {
+             setScore(progress.score || 0);
+             setCurrentIndex(progress.currentIndex);
+             setDeadline(progress.deadline);
+-            setSelectedOption(null);
+             const remaining = Math.max(0, Math.ceil((progress.deadline - Date.now()) / 1000));
+             setTimeLeft(remaining);
+-            // If time had already run out while the tab was closed, show
+-            // the timeout feedback immediately so the user can hit Next.
+-            setFeedback(remaining <= 0 ? 'wrong' : null);
++            if (progress.feedback) {
++              // Question was already answered before the refresh — restore
++              // that answer instead of letting them pick again.
++              setSelectedOption(progress.selectedOption ?? null);
++              setFeedback(progress.feedback);
++            } else {
++              setSelectedOption(null);
++              // If time had already run out while the tab was closed, show
++              // the timeout feedback immediately so the user can hit Next.
++              setFeedback(remaining <= 0 ? 'wrong' : null);
++            }
+             setGameState('playing');
+           } else {
+             // Attempt was claimed, but this browser/device has no local
+@@ -399,15 +412,16 @@ export default function Home() {
+   const handleAnswer = () => {
+     if (selectedOption === null || feedback !== null || isBlocked) return;
+     const isCorrect = selectedOption === questions[currentIndex].correctIndex;
+-    setFeedback(isCorrect ? 'correct' : 'wrong');
++    const newFeedback = isCorrect ? 'correct' : 'wrong';
++    setFeedback(newFeedback);
++    const newScore = isCorrect ? score + 1 : score;
+     if (isCorrect) {
+-      const newScore = score + 1;
+       setScore(newScore);
+-      if (deadline !== null) {
+-        saveProgress({ currentIndex, score: newScore, deadline });
+-      }
+       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+     }
++    if (deadline !== null) {
++      saveProgress({ currentIndex, score: newScore, deadline, selectedOption, feedback: newFeedback });
++    }
+   };
+ 
+   const fetchUserRank = async (playerName: string) => {
