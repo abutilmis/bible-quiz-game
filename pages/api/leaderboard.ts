@@ -23,13 +23,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
       .filter(Boolean);
     
-    // Sort: score descending, then timestamp ascending (earlier first)
+    // Sort: highest score first, then shortest duration, then earliest
+    // timestamp, then id — same tie-break order as /api/leaderboard-public
+    // so the two lists never disagree on ranking.
     results.sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
-      // Use timestamp if exists, else use Infinity to push old entries to the bottom
+      const aDuration = typeof a.duration === 'number' ? a.duration : Infinity;
+      const bDuration = typeof b.duration === 'number' ? b.duration : Infinity;
+      if (aDuration !== bDuration) return aDuration - bDuration;
       const aTime = a.timestamp || Infinity;
       const bTime = b.timestamp || Infinity;
-      return aTime - bTime;
+      if (aTime !== bTime) return aTime - bTime;
+      return 0;
     });
     const top10 = results.slice(0, 10).map(r => ({ name: r.name, score: r.score }));
     res.status(200).json(top10);

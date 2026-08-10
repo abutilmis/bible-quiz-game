@@ -888,42 +888,42 @@ export default function Home() {
             )}
           </>
         )}
-      </div>
-      {/* Share buttons – inside the card, below leaderboard */}
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <p className="text-white/50 text-xs text-center mb-3 flex items-center justify-center gap-1"><Share2 className="w-3 h-3"/> Share your result</p>
-        <div className="flex flex-row justify-center gap-3">
-          <button
-            onClick={() => {
-              const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
-              if (navigator.share) {
-                navigator.share({
-                  title: 'My Bible Quiz Score',
-                  text: message,
-                  url: window.location.origin,
-                }).catch(() => {
+        {/* Share buttons – inside the card, below leaderboard */}
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <p className="text-white/50 text-xs text-center mb-3 flex items-center justify-center gap-1"><Share2 className="w-3 h-3"/> Share your result</p>
+          <div className="flex flex-row justify-center gap-3">
+            <button
+              onClick={() => {
+                const message = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!\n\nTake the challenge: ${window.location.origin}`;
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'My Bible Quiz Score',
+                    text: message,
+                    url: window.location.origin,
+                  }).catch(() => {
+                    navigator.clipboard.writeText(message);
+                    alert('Score copied to clipboard!');
+                  });
+                } else {
                   navigator.clipboard.writeText(message);
                   alert('Score copied to clipboard!');
-                });
-              } else {
-                navigator.clipboard.writeText(message);
-                alert('Score copied to clipboard!');
-              }
-            }}
-            className="px-4 py-2 rounded-full text-sm font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-2"
-          >
-            <Copy className="w-4 h-4"/> Copy Score
-          </button>
-          <button
-            onClick={() => {
-              const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!`;
-              const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
-              window.open(url, '_blank');
-            }}
-            className="px-4 py-2 rounded-full text-sm font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-2"
-          >
-            <Send className="w-4 h-4"/> Share on Telegram
-          </button>
+                }
+              }}
+              className="px-4 py-2 rounded-full text-sm font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-2"
+            >
+              <Copy className="w-4 h-4"/> Copy Score
+            </button>
+            <button
+              onClick={() => {
+                const text = `🎉 I scored ${score}/${totalQuestions} (${Math.round(score / totalQuestions * 100)}%) on the Bible Quiz!`;
+                const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+              }}
+              className="px-4 py-2 rounded-full text-sm font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-2"
+            >
+              <Send className="w-4 h-4"/> Share on Telegram
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
