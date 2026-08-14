@@ -1,0 +1,28 @@
+diff --git a/pages/index.tsx b/pages/index.tsx
+index f2234b9..7ddeb52 100644
+--- a/pages/index.tsx
++++ b/pages/index.tsx
+@@ -144,6 +144,14 @@ export default function Home() {
+     localStorage.removeItem('quizStartTime');
+   };
+ 
++  // Used when the quiz reaches the finished screen but hasn't been submitted
++  // yet — must NOT touch quizStartTime, since saveResult() still needs it to
++  // compute duration. Only the full clearProgress() (after duration is read)
++  // should remove quizStartTime.
++  const clearProgressOnly = () => {
++    localStorage.removeItem('quizProgress');
++  };
++
+   // Robust Device ID generation
+   useEffect(() => {
+     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
+@@ -350,7 +358,7 @@ export default function Home() {
+       setDeadline(nextDeadline);
+       saveProgress({ currentIndex: nextIndex, score, deadline: nextDeadline });
+     } else {
+-      clearProgress();
++      clearProgressOnly();
+       setGameState('finished');
+     }
+   };
