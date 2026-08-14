@@ -284,22 +284,20 @@ export default function Home() {
             if (now < start) {
               setCompetitionActive(false);
               const diff = start - now;
-              const days = Math.floor(diff / 86400000);
-              const hours = Math.floor((diff % 86400000) / 3600000);
+              const hours = Math.floor(diff / 3600000);
               const minutes = Math.floor((diff % 3600000) / 60000);
               const seconds = Math.floor((diff % 60000) / 1000);
-              setTimeRemaining(`⏳ Countdown until start: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+              setTimeRemaining(`⏳ Countdown until start: ${hours}h ${minutes}m ${seconds}s`);
             } else if (now > end) {
               setCompetitionActive(false);
               setTimeRemaining('⛔ Competition has ended');
             } else {
               setCompetitionActive(true);
               const diff = end - now;
-              const days = Math.floor(diff / 86400000);
-              const hours = Math.floor((diff % 86400000) / 3600000);
-              const minutes = Math.floor((diff % 3600000) / 60000);
-              const seconds = Math.floor((diff % 60000) / 1000);
-              setTimeRemaining(`🔥 Competition ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+              const hours = Math.floor(diff / 3600000);
+               const minutes = Math.floor((diff % 3600000) / 60000);
+               const seconds = Math.floor((diff % 60000) / 1000);
+               setTimeRemaining(`🔥 Competition ends in: ${hours}h ${minutes}m ${seconds}s`);
             }
           };
           updateStatus();
