@@ -3,92 +3,92 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/router';
 import { Question } from '../types';
-import { 
-  LogOut, Trophy, BookOpen, Star, Clock, Lock, 
-  CheckCircle, ChevronLeft, ChevronRight, CheckCircle2, 
-  XCircle, Lightbulb, Copy, Send, Share2 
+import {
+  LogOut, Trophy, BookOpen, Star, Clock, Lock,
+  CheckCircle, ChevronLeft, ChevronRight, CheckCircle2,
+  XCircle, Lightbulb, Copy, Send, Share2
 } from 'lucide-react';
 
 const questions: Question[] = [
   {
     id: 1,
     book: "ዘፍጥረት",
-    question: "እግዚአብሔር በሦስተኛው ቀን የፈጠረው ነገር ምንድን ነው?",
-    options: ["ብርሃን", "ሰማይና ውኃ", "የየብስ ምድር፣ ባሕርና ዕፅዋት", "ፀሐይ፣ ጨረቃና ኮከቦች"],
-    correctIndex: 2,
-    explanation: "በዘፍጥረት 1:9-13 መሠረት እግዚአብሔር በሦስተኛው ቀን የየብስ ምድርን ከውኃ ለይቶ ዕፅዋትንና ዛፎችን አበቀለ።"
+    question: "ያዕቆብ ከኤሳው ፊት ከመድረሱ በፊት ሌሊቱን ሙሉ ከሰው (ከመልአክ) ጋር የታገለበትና ስሙ ወደ 'እስራኤል' የተለወጠበት ቦታ ምን ይባላል?",
+    options: ["ቤቴል", "ጵኑኤል", "ሴኬም", "ኬብሮን"],
+    correctIndex: 1,
+    explanation: "በዘፍጥረት 32:30 መሠረት ያዕቆብ «እግዚአብሔርን ፊት ለፊት አየሁ፥ ነፍሴም ድና ቀረች» ሲል የዚያን ቦታ ስም 'ጵኑኤል' ብሎ ጠራው።"
   },
   {
     id: 2,
-    book: "1 ነገሥት",
-    question: "ንጉሥ ሰሎሞን ቤተ መቅደሱን ለመሥራት ያዘዘው እንጨት ከየትኛው ሀገር መጣ?",
-    options: ["ከግብፅ", "ከሊባኖስ", "ከባቢሎን", "ከፋርስ"],
-    correctIndex: 1,
-    explanation: "በ1 ነገሥት 5:6 መሠረት ሰሎሞን ከሊባኖስ የዝግባ እንጨት እንዲቆረጥለት ከጢሮስ ንጉሥ ከኪራም ጋር ተስማማ።"
+    book: "ዘፀአት",
+    question: "በግብፅ ላይ ከወረዱት አሥር መቅሠፍቶች መካከል እስራኤላውያን ከሚኖሩበት ከጎሼን ምድር ሳይደርስ የግብፅን ምድር ብቻ መምታት የጀመረው የመጀመሪያው መቅሠፍት የትኛው ነበር?",
+    options: ["የደም መቅሠፍት", "የእንቁራሪት መቅሠፍት", "የበረዶና የእሳት መቅሠፍት", "የዝንብ መንጋ መቅሠፍት"],
+    correctIndex: 3,
+    explanation: "በዘፀአት 8:22-23 መሠረት እግዚአብሔር ከ4ኛው መቅሠፍት ከነበረው የዝንብ መንጋ የጌሴምን ምድር ለይቶ ነበር።"
   },
   {
     id: 3,
-    book: "መዝሙረ ዳዊት",
-    question: "በዳዊት መዝሙር ውስጥ ረጅሙ ምዕራፍ የትኛው ነው?",
-    options: ["መዝሙር 23", "መዝሙር 91", "መዝሙር 117", "መዝሙር 119"],
-    correctIndex: 3,
-    explanation: "መዝሙር 119 በ176 ቁጥሮች የተዋቀረ ሲሆን በመጽሐፍ ቅዱስ ውስጥ ረጅሙ ምዕራፍ ነው።"
+    book: "ዘኍልቍ",
+    question: "በእስራኤላውያን ማጉረምረም ምክንያት የተላኩትን እባቦች ለመከላከል ሙሴ በዓላማ ላይ የሰቀለው የእባብ ምስል ከምን የተሠራ ነበር?",
+    options: ["ከወርቅ", "ከብር", "ከናስ", "ከብረት"],
+    correctIndex: 2,
+    explanation: "በዘኍልቍ 21:9 መሠረት ሙሴ የናስ እባብ ሠርቶ በዓላማ ላይ ሰቀለ፤ የተነደፈውም ሁሉ የናሱን እባብ ባየ ጊዜ ይድን ነበር።"
   },
   {
     id: 4,
-    book: "ኢያሱ",
-    question: "የኢያሪኮ ቅጥር እስራኤላውያን ከተማዋን ለስንት ቀናት በዞሩ በኋላ ነው የወደቀው?",
-    options: ["3 ቀናት", "7 ቀናት", "12 ቀናት", "40 ቀናት"],
-    correctIndex: 1,
-    explanation: "በኢያሱ 6:3-5 መሠረት ለ6 ቀናት በቀን አንድ ጊዜ፣ በ7ኛው ቀን ደግሞ 7 ጊዜ ከዞሩ በኋላ ቅጥሩ ወደቀ።"
+    book: "መጽሐፈ ሩት",
+    question: "የሩት ባል የነበረው ቦዔዝ የንጉሥ ዳዊት ምን ነበር?",
+    options: ["አባቱ", "አያቱ", "ቅድመ አያቱ", "ታላቅ ወንድሙ"],
+    correctIndex: 2,
+    explanation: "በሩት 4:21-22 መሠረት ቦዔዝ ኢዮቤድ ወለደ፤ ኢዮቤድም እሴይን ወለደ፤ እሴይም ዳዊትን ወለደ። ስለዚህ ቦዔዝ የዳዊት ቅድመ አያት ነው።"
   },
   {
     id: 5,
-    book: "ማቴዎስ",
-    question: "ኢየሱስ ክርስቶስ በተራራው ስብከቱ ላይ የተናገራቸው መመሪያዎች በየትኞቹ ምዕራፎች ይገኛሉ?",
-    options: ["ምዕራፍ 1-3", "ምዕራፍ 5-7", "ምዕራፍ 10-12", "ምዕራፍ 24-25"],
-    correctIndex: 1,
-    explanation: "የማቴዎስ ወንጌል ምዕራፍ 5 እስከ 7 ያለው ክፍል 'የተራራው ስብከት' (Sermon on the Mount) በመባል ይታወቃል።"
+    book: "1 ነገሥት",
+    question: "ነቢዩ ኤልያስ በቀርሜሎስ ተራራ ላይ ከበኣል ነቢያት ጋር በተፎካከረ ጊዜ ስንት የበኣል ነቢያት ተሰብስበው ነበር?",
+    options: ["100", "300", "450", "850"],
+    correctIndex: 2,
+    explanation: "በ1 ነገሥት 18:19 መሠረት ኤልያስ 450 የበኣል ነቢያትንና 400 የማምለክያ አጸድን ነቢያትን ወደ ቀርሜሎስ ተራራ እንዲሰበሰቡ አዘዘ።"
   },
   {
     id: 6,
-    book: "የሐዋርያት ሥራ",
-    question: "በጴንጠቆስጤ ቀን መንፈስ ቅዱስ በወረደ ጊዜ ሐዋርያው ጴጥሮስ በሰበከው ስብከት ስንት ሰዎች አመኑ?",
-    options: ["500 ሰዎች", "1,000 ሰዎች", "3,000 ሰዎች", "5,000 ሰዎች"],
-    correctIndex: 2,
-    explanation: "በየሐዋርያት ሥራ 2:41 መሠረት በዚያን ቀን ቃሉን ተቀብለው የተጠመቁ ሦስት ሺህ ያህል (3,000) ነፍሳት ተጨመሩ።"
+    book: "መጽሐፈ ኢዮብ",
+    question: "ኢዮብን በመውቀስ ከተናገሩት ሦስት ወዳጆቹ ይልቅ በእድሜ ታናሽ ሆኖ በጽኑ የተናገረው አራተኛው ሰው ማን ነበር?",
+    options: ["ኤልፋዝ", "በልዳዶስ", "ሶፋር", "ኤሊሁ"],
+    correctIndex: 3,
+    explanation: "በኢዮብ 32:2-6 መሠረት ኤሊሁ በዕድሜ ታናሽ ስለነበር ሽማግሌዎቹ ተናግረው እስኪጨርሱ ታግሦ ከቆየ በኋላ በቁጣ ተናገረ።"
   },
   {
     id: 7,
-    book: "ገላትያ",
-    question: "በገላትያ 5:22-23 ከተዘረዘሩት የመንፈስ ፍሬዎች መካከል የመጀመሪያው የተጠቀሰው የትኛው ነው?",
-    options: ["ደስታ", "ሰላም", "ፍቅር", "ትዕግሥት"],
-    correctIndex: 2,
-    explanation: "ገላትያ 5:22 'የመንፈስ ፍሬ ግን ፍቅር፥ ደስታ፥ ሰላም፥ ትዕግሥት...' በማለት በፍቅር ይጀምራል።"
+    book: "ሉቃስ",
+    question: "ኢየሱስ ወንጌልን እንዲሰብኩና ታምራት እንዲያደርጉ በጥንድ በጥንድ የላካቸው ስንት ደቀ መዛሙርት ነበሩ?",
+    options: ["12", "70", "120", "500"],
+    correctIndex: 1,
+    explanation: "በሉቃስ 10:1 መሠረት ጌታ ሌሎች ሰባ (70) ደቀ መዛሙርትን ደግሞ መረጠ፥ እርሱም ሊሄድበት ባለው ከተማና ስፍራ ሁሉ ሁለት ሁለት አድርጎ በፊቱ ላካቸው።"
   },
   {
     id: 8,
-    book: "ዕብራውያን",
-    question: "በዕብራውያን መጽሃፍ ምዕራፍ 11 'የእምነት አባቶች' ተብለው ከተዘረዘሩት ውስጥ የመጀመሪያው ማን ነው?",
-    options: ["አብርሃም", "አቤል", "ሄኖክ", "ኖኅ"],
-    correctIndex: 1,
-    explanation: "ዕብራውያን 11:4 'አቤል ከቃየል ይልቅ የሚበልጥን መሥዋዕት ለእግዚአብሔር በእምነት አቀረበ' በማለት በአቤል ይጀምራል።"
+    book: "የሐዋርያት ሥራ",
+    question: "በአንጾኪያ ከተማ አማኞች ለመጀመሪያ ጊዜ 'ክርስቲያን' ተብለው በተጠሩበት ጊዜ ጳውሎስና በርናባስ በዚያ ለምን ያህል ጊዜ ቆይተው አስተማሩ?",
+    options: ["አንድ ወር", "ሦስት ወር", "አንድ ዓመት", "ሦስት ዓመት"],
+    correctIndex: 2,
+    explanation: "በየሐዋርያት ሥራ 11:26 መሠረት በቤተ ክርስቲያኒቱ ሙሉ ዓመት ተሰበሰቡ፥ ብዙ ሕዝብንም አስተማሩ፤ ደቀ መዛሙርቱም ለመጀመሪያ ጊዜ በአንጾኪያ 'ክርስቲያን' ተባሉ።"
   },
   {
     id: 9,
-    book: "የዮሐንስ ራእይ",
-    question: "በዮሐንስ ራእይ ከተማዋ ውስጥ መልእክት የተላከላቸው ስንት አብያተ ክርስቲያናት ነበሩ?",
-    options: ["3", "7", "12", "70"],
+    book: "2 ቆሮንቶስ",
+    question: "ሐዋርያው ጳውሎስ እንዳይታበይ በሥጋው ላይ የተሰጠው 'የሥጋ መውጊያ' እንዲወገድለት ጌታን ስንት ጊዜ ለመነ?",
+    options: ["አንድ ጊዜ", "ሦስት ጊዜ", "ሰባት ጊዜ", "አርባ ጊዜ"],
     correctIndex: 1,
-    explanation: "በራእይ 1:11 እና ምዕራፍ 2-3 መሠረት በእስያ ላሉት ሰባት አብያተ ክርስቲያናት መልእክት ተላከ።"
+    explanation: "በ2 ቆሮንቶስ 12:8 መሠረት ጳውሎስ «ስለዚህ ነገር ከእኔ እንዲለይ ሦስት ጊዜ ጌታን ለመንሁ» ብሏል።"
   },
   {
     id: 10,
     book: "የዮሐንስ ራእይ",
-    question: "በዮሐንስ ራእይ መጨረሻ ላይ የተጠቀሰችው አዲሲቷ ከተማ ማን ትባላለች?",
-    options: ["አዲሲቷ ባቢሎን", "አዲሲቷ ኢየሩሳሌም", "አዲሲቷ ጽዮን", "አዲሲቷ ቃና"],
+    question: "በራእይ ምዕራፍ 12 ላይ በሰማይ በተደረገው ጦርነት ዘንዶውን ድል አድርጎ ወደ ምድር የጣለው መላእክት አለቃ ማን ነው?",
+    options: ["ገብርኤል", "ሚካኤል", "ሱራፌል", "ሩፋኤል"],
     correctIndex: 1,
-    explanation: "በራእይ 21:2 'ቅድስቲቱም ከተማ አዲሲቱ ኢየሩሳሌም... ከሰማይ ስትወርድ አየሁ' ይላል።"
+    explanation: "በራእይ 12:7-9 መሠረት በሰማይ ጦርነት ሆነ፤ ሚካኤልና መላእክቱ ዘንዶውን ተዋጉት፥ ድልም አደረጉት።"
   }
 ];
 
@@ -546,7 +546,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
               <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5"/> Leaderboard</h2>
+                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5" /> Leaderboard</h2>
                   <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
                 </div>
                 {loadingLeaderboard ? (
@@ -649,7 +649,7 @@ export default function Home() {
             disabled={!competitionActive}
             className="bg-[#FFD966] text-[#1e3c2c] px-8 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
           >
-            <BookOpen className="w-6 h-6"/> Start Quiz
+            <BookOpen className="w-6 h-6" /> Start Quiz
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -664,7 +664,7 @@ export default function Home() {
             }}
             className="mt-4 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            <LogOut className="w-4 h-4"/> Logout
+            <LogOut className="w-4 h-4" /> Logout
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -672,14 +672,14 @@ export default function Home() {
             onClick={fetchPublicLeaderboard}
             className="mt-2 w-full md:w-auto px-6 py-2 rounded-full text-sm font-medium bg-transparent border border-[#FFD966]/50 text-[#FFD966] hover:bg-[#FFD966]/10 transition-all duration-300 inline-flex items-center justify-center gap-2"
           >
-            <Trophy className="w-4 h-4"/> View Leaderboard
+            <Trophy className="w-4 h-4" /> View Leaderboard
           </motion.button>
           {/* Leaderboard Modal */}
           {showLeaderboardModal && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
               <div className="bg-gradient-to-br from-[#090909] to-[#151515] rounded-2xl p-6 max-w-md w-full border border-[#FFD966]/30 shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5"/> Leaderboard</h2>
+                  <h2 className="text-xl font-bold text-[#FFD966] flex items-center gap-2"><Trophy className="w-5 h-5" /> Leaderboard</h2>
                   <button onClick={() => setShowLeaderboardModal(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
                 </div>
                 {loadingLeaderboard ? (
@@ -719,13 +719,13 @@ export default function Home() {
       >
         <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-md w-full text-center border border-[#FFD966]/30 shadow-2xl">
           <h2 className="text-2xl font-bold text-[#FFD966] mb-4 flex items-center justify-center gap-2">
-            <BookOpen className="w-6 h-6"/> Before You Begin
+            <BookOpen className="w-6 h-6" /> Before You Begin
           </h2>
           <div className="text-white/80 space-y-3 text-left mb-6">
-            <p className="flex items-start gap-2"><Star className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>በዛሬው ውድድር <strong className="text-[#FFD966]">{10} የመጽሃፍ ቅዱስ ጥያቄዎች</strong> ይኖሩናል።</span></p>
-            <p className="flex items-start gap-2"><Clock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</span></p>
-            <p className="flex items-start gap-2"><Trophy className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</span></p>
-            <p className="flex items-start gap-2"><Lock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5"/> <span>ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</span></p>
+            <p className="flex items-start gap-2"><Star className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>በዛሬው ውድድር <strong className="text-[#FFD966]">{10} የመጽሃፍ ቅዱስ ጥያቄዎች</strong> ይኖሩናል።</span></p>
+            <p className="flex items-start gap-2"><Clock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</span></p>
+            <p className="flex items-start gap-2"><Trophy className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</span></p>
+            <p className="flex items-start gap-2"><Lock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</span></p>
           </div>
           <div className="flex flex-col gap-3">
             <motion.button
@@ -737,7 +737,7 @@ export default function Home() {
               disabled={startingQuiz}
               className="bg-[#FFD966] text-[#1e3c2c] px-6 py-2 rounded-full font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <CheckCircle className="w-5 h-5"/> {startingQuiz ? 'Starting...' : 'Agree & Start'}
+              <CheckCircle className="w-5 h-5" /> {startingQuiz ? 'Starting...' : 'Agree & Start'}
             </motion.button>
             {startError && (
               <p className="text-red-400 text-sm">{startError}</p>
@@ -748,7 +748,7 @@ export default function Home() {
               onClick={() => setGameState('start')}
               className="bg-transparent border border-white/30 text-white/70 px-6 py-2 rounded-full text-sm flex items-center justify-center gap-2"
             >
-              <ChevronLeft className="w-4 h-4"/> Back
+              <ChevronLeft className="w-4 h-4" /> Back
             </motion.button>
           </div>
         </div>
@@ -763,9 +763,9 @@ export default function Home() {
         <div className="w-full max-w-2xl">
           <div className="flex justify-between items-center text-white/80 mb-2">
             <span className={`flex items-center gap-1 ${timeLeft <= 5 ? 'text-red-500 font-bold animate-pulse' : ''}`}>
-              <Clock className="w-4 h-4"/> {timeLeft}s
+              <Clock className="w-4 h-4" /> {timeLeft}s
             </span>
-            <span className="flex items-center gap-1"><Copy className="w-4 h-4"/> {currentIndex + 1}/{totalQuestions}</span>
+            <span className="flex items-center gap-1"><Copy className="w-4 h-4" /> {currentIndex + 1}/{totalQuestions}</span>
           </div>
           <motion.div
             key={currentIndex}
@@ -785,14 +785,14 @@ export default function Home() {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedOption(idx)}
                   className={`w-full text-left p-4 rounded-xl border transition ${feedback !== null
-                      ? idx === q.correctIndex
-                        ? 'bg-green-500/30 border-green-500 text-white font-bold'
-                        : selectedOption === idx
-                          ? 'bg-red-500/30 border-red-500 text-white font-bold'
-                          : 'bg-black/30 border-transparent text-white'
+                    ? idx === q.correctIndex
+                      ? 'bg-green-500/30 border-green-500 text-white font-bold'
                       : selectedOption === idx
-                        ? 'bg-[#FFD966] border-[#FFD966] text-[#1e3c2c] font-bold'
-                        : 'bg-black/30 border-transparent text-white hover:bg-black/50'
+                        ? 'bg-red-500/30 border-red-500 text-white font-bold'
+                        : 'bg-black/30 border-transparent text-white'
+                    : selectedOption === idx
+                      ? 'bg-[#FFD966] border-[#FFD966] text-[#1e3c2c] font-bold'
+                      : 'bg-black/30 border-transparent text-white hover:bg-black/50'
                     }`}
                   disabled={feedback !== null}
                 >
@@ -825,12 +825,12 @@ export default function Home() {
                   className={`text-center text-2xl font-bold mb-4 flex items-center justify-center gap-2 ${feedback === 'correct' ? 'text-green-400' : 'text-red-400'
                     }`}
                 >
-                  {feedback === 'correct' ? <><CheckCircle2 className="w-8 h-8"/> Correct!</> : <><XCircle className="w-8 h-8"/> Wrong!</>}
+                  {feedback === 'correct' ? <><CheckCircle2 className="w-8 h-8" /> Correct!</> : <><XCircle className="w-8 h-8" /> Wrong!</>}
                 </div>
 
                 <div className="bg-white/10 p-5 rounded-2xl border border-white/20 mb-6 shadow-lg backdrop-blur-md">
                   <h3 className="text-[#FFD966] font-bold mb-2 flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5"/> Explanation
+                    <Lightbulb className="w-5 h-5" /> Explanation
                   </h3>
                   <p className="text-white/90 leading-relaxed text-sm md:text-base">{q.explanation}</p>
                 </div>
@@ -841,7 +841,7 @@ export default function Home() {
                   onClick={nextQuestion}
                   className="w-full bg-[#FFD966] text-[#1e3c2c] py-3 rounded-full font-bold transition shadow-[0_0_15px_rgba(255,217,102,0.3)] hover:shadow-[0_0_25px_rgba(255,217,102,0.5)] flex items-center justify-center gap-2"
                 >
-                  {currentIndex + 1 < totalQuestions ? <><ChevronRight className="w-5 h-5"/> Next Question</> : <><Trophy className="w-5 h-5"/> View Results</>}
+                  {currentIndex + 1 < totalQuestions ? <><ChevronRight className="w-5 h-5" /> Next Question</> : <><Trophy className="w-5 h-5" /> View Results</>}
                 </motion.button>
               </motion.div>
             )}
@@ -866,10 +866,10 @@ export default function Home() {
           <div className="spinner mx-auto my-4 w-6 h-6 border-2 border-t-2"></div>
         ) : (
           <>
-            <p className="text-green-400 mb-4 flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5"/> Your score has been recorded!</p>
+            <p className="text-green-400 mb-4 flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Your score has been recorded!</p>
             {leaderboard.length > 0 && (
               <div className="mt-6 text-left bg-black/20 rounded-xl p-4">
-                <h3 className="text-[#FFD966] font-bold text-xl mb-2 text-center flex items-center justify-center gap-2"><Trophy className="w-5 h-5"/> Top Players</h3>
+                <h3 className="text-[#FFD966] font-bold text-xl mb-2 text-center flex items-center justify-center gap-2"><Trophy className="w-5 h-5" /> Top Players</h3>
                 <div className="space-y-1">
                   {leaderboard.map((user, idx) => (
                     <div key={idx} className="text-white/80 flex justify-between text-sm md:text-base">
@@ -880,7 +880,7 @@ export default function Home() {
                   ))}
                   {userRank && (
                     <div className="mt-4 pt-2 border-t border-white/10 text-center flex items-center justify-center gap-2">
-                      <Trophy className="w-4 h-4 text-[#FFD966]"/> <span className="text-[#FFD966] font-bold">Your Rank: #{userRank}</span>
+                      <Trophy className="w-4 h-4 text-[#FFD966]" /> <span className="text-[#FFD966] font-bold">Your Rank: #{userRank}</span>
                     </div>
                   )}
                 </div>
@@ -890,7 +890,7 @@ export default function Home() {
         )}
         {/* Share buttons – inside the card, below leaderboard */}
         <div className="mt-6 pt-4 border-t border-white/10">
-          <p className="text-white/50 text-xs text-center mb-3 flex items-center justify-center gap-1"><Share2 className="w-3 h-3"/> Share your result</p>
+          <p className="text-white/50 text-xs text-center mb-3 flex items-center justify-center gap-1"><Share2 className="w-3 h-3" /> Share your result</p>
           <div className="flex flex-row justify-center gap-3">
             <button
               onClick={() => {
@@ -911,7 +911,7 @@ export default function Home() {
               }}
               className="px-4 py-2 rounded-full text-sm font-medium bg-[#FFD966]/10 text-[#FFD966] border border-[#FFD966]/30 hover:bg-[#FFD966]/20 transition flex items-center gap-2"
             >
-              <Copy className="w-4 h-4"/> Copy Score
+              <Copy className="w-4 h-4" /> Copy Score
             </button>
             <button
               onClick={() => {
@@ -921,7 +921,7 @@ export default function Home() {
               }}
               className="px-4 py-2 rounded-full text-sm font-medium bg-[#0088cc]/10 text-[#0088cc] border border-[#0088cc]/30 hover:bg-[#0088cc]/20 transition flex items-center gap-2"
             >
-              <Send className="w-4 h-4"/> Share on Telegram
+              <Send className="w-4 h-4" /> Share on Telegram
             </button>
           </div>
         </div>
