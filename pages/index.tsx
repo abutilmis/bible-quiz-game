@@ -144,14 +144,6 @@ export default function Home() {
     localStorage.removeItem('quizStartTime');
   };
 
-  // Used when the quiz reaches the finished screen but hasn't been submitted
-  // yet — must NOT touch quizStartTime, since saveResult() still needs it
-  // to compute duration. Only the full clearProgress() (after duration is read)
-  // should remove quizStartTime.
-  const clearProgressOnly = () => {
-    localStorage.removeItem('quizProgress');
-  };
-
   // Robust Device ID generation
   useEffect(() => {
     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
