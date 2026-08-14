@@ -11,7 +11,8 @@ export default function App({ Component, pageProps }: AppProps) {
           name="description"
           content="Play the Bible Quiz and compete for top scores. Answer scripture questions, track your rank, and join the quiz challenge."
         />
-        <link rel="icon" href="https://bible-quiz-games.vercel.app/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" />
+<link rel="shortcut icon" href="/favicon.ico" />
       </Head>
       <Component {...pageProps} />
     </>
