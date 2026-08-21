@@ -34,7 +34,7 @@ const questions: Question[] = [
   {
     id: 3,
     book: "ዘጸአት",
-    question: "ዕብራውያን ወንዶች ልጆችን እንዲገድሉ የታዘዙትና እግዚአብሔርን በመፍራት ትዕዛዙን ያልፈጸሙት ሁለቱ የዕብራውያን አዋላጆች (አያልቃሾች) ማን ይባላሉ?",
+    question: "ዕብራውያን ወንዶች ልጆችን እንዲገድሉ የታዘዙትና እግዚአብሔርን በመፍራት ትዕዛዙን ያልፈጸሙት ሁለቱ የዕብራውያን አዋላጆች ማን ይባላሉ?",
     options: ["ማርያም እና ዮካብድ", "ሲፓራ እና ፉሐ", "ርብቃ እና ራሔል", "ሊያ እና ቢልሃ"],
     correctIndex: 1,
     explanation: "በዘጸአት 1:15-17 መሠረት የዕብራውያን አዋላጆች ሲፓራና ፉዓ ይባሉ ነበር።"
@@ -755,7 +755,7 @@ export default function Home() {
             <BookOpen className="w-6 h-6" /> Before You Begin
           </h2>
           <div className="text-white/80 space-y-3 text-left mb-6">
-            <p className="flex items-start gap-2"><Star className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>በዛሬው ውድድር <strong className="text-[#FFD966]">{10} የመጽሃፍ ቅዱስ ጥያቄዎች</strong> ይኖሩናል።</span></p>
+            <p className="flex items-start gap-2"><Star className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>በዛሬው ውድድር <strong className="text-[#FFD966]">{10} የዘጸአት መጽሃፍ ጥያቄዎች</strong> ይኖሩናል።</span></p>
             <p className="flex items-start gap-2"><Clock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>ለእያንዳንዱ ጥያቄ <strong className="text-[#FFD966]">30 ሰከንድ</strong> ጊዜ አለዎት።</span></p>
             <p className="flex items-start gap-2"><Trophy className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>የሚያገኙት ደረጃ ባስመዘገቡት ውጤት እና ውድድሩን ለመጨረስ የወሰዶቦት ጊዜ ይወሰናል።</span></p>
             <p className="flex items-start gap-2"><Lock className="w-5 h-5 text-[#FFD966] shrink-0 mt-0.5" /> <span>ይህን ጥያቄ <strong className="text-[#FFD966]">አንድ ጊዜ ብቻ</strong> መውሰድ ይችላሉ።</span></p>
